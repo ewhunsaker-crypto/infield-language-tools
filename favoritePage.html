@@ -175,6 +175,57 @@
       font-style: italic;
       margin-top: 4px;
     }
+
+
+    /* Footer row inside the favorites card */
+    .favorites-footer{
+      display:flex;
+      justify-content:space-between; /* left group and right button on same row */
+      align-items:center;
+      margin-top:12px;
+    }
+
+    .footer-left{
+      display:flex;
+      gap:8px;
+    }
+
+    .footer-right{
+      margin-left:auto; /* push to right edge */
+    }
+
+    /* Emphasis for Next Week button */
+    .next-week-btn{
+      font-weight:700;            /* bold label */
+      background:#fff;            /* keep consistent with .btn */
+      border:1px solid var(--blue-600);
+      color: var(--blue-700);
+      padding:6px 12px;
+    }
+
+    .next-week-btn:hover{
+      background:#e6f0ff;         /* gentle hover */
+    }
+    ``
+
+    /* Generic disabled look for .btn */
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+      background: #f5f5f5;
+      border-color: #ddd;
+      color: #8a8a8a;
+    }
+
+    /* Optional: specific tweak for the Next Week button */
+    .next-week-btn:disabled {
+      font-weight: 700;          /* stays bold but clearly disabled */
+      background: #f5f5f5;
+      color: #8a8a8a;
+      border-color: #ddd;
+    }
+
+
     .fav-remove, .check-btn, .btn {
       cursor: pointer;
       padding: 6px 10px;
@@ -194,6 +245,33 @@
     .fav-remove:hover, .check-btn:hover, .btn:hover {
       background-color: #f0f6ff;
     }
+
+    /* Right-arrow button for favorites cards */
+    .move-next {
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background-color: #f5f5f5;
+      min-width: 32px;
+      text-align: center;
+      /* Place it on the right side of the card’s top row */
+      margin-left: auto;
+     font-size: 1.2rem;
+    }
+    .move-next:hover {
+      background-color: #f0f6ff;
+    }
+
+
+    .move-next:disabled {
+      cursor: not-allowed;
+      opacity: .5;
+      background-color: #f5f5f5;
+      border-color: #ddd;
+    }
+
+
     .check-btn.checked {
       background-color: var(--success-bg);
       border-color: var(--success-border);
@@ -283,10 +361,17 @@
     <ul id="favorites-list"></ul>
 
     <!-- Clear actions footer -->
-    <div style="display:flex; gap:8px; margin-top:12px;">
-      <button id="clear-week" class="btn">Clear Week</button>
-      <button id="clear-all" class="btn">Clear All</button>
-    </div>
+    
+<div class="favorites-footer">
+  <div class="footer-left">
+    <button id="clear-week" class="btn">Clear Week</button>
+    <button id="clear-all" class="btn">Clear All</button>
+  </div>
+  <div class="footer-right">
+    <button id="goto-next-week" class="btn next-week-btn"><strong>Next Week →</strong></button>
+  </div>
+</div>
+
   </div>
 
   <hr>
@@ -833,6 +918,28 @@
       renderFavorites();
       refreshFavoritedHints();
       updateWeekRangeDisplay();
+
+      
+    // Disable Next Week button on Week 12 (no-wrap behavior)
+    function refreshNextWeekButton() {
+      const btn = document.getElementById("goto-next-week");
+      if (!btn) return;
+      btn.disabled = (activeWeek === WEEK_COUNT); // disabled only on Week 12
+    }
+
+    // Update setActiveWeek to call the refresher
+    function setActiveWeek(week) {
+      activeWeek = week;
+      localStorage.setItem("activeWeek", String(week));
+      tabs.forEach(t => t.classList.toggle("active", parseInt(t.dataset.week, 10) === week));
+      renderFavorites();
+      refreshFavoritedHints();
+      updateWeekRangeDisplay();
+      refreshNextWeekButton();     // <-- add this line
+    }
+
+    // Also call once on load after your initial setActiveWeek(activeWeek);
+
     }
 
     /* ---------- SOURCE LIST: wrap items into cards & add completion lines ---------- */
@@ -879,90 +986,171 @@
     }
 
     /* ---------- Favorites list item (card) ---------- */
-    function createFavoriteLi(itemId) {
-      const src = document.querySelector(`.skill-item[data-item-id="${itemId}"]`);
-      const li = document.createElement("li");
-      li.setAttribute("data-fav-item-id", itemId);
 
-      const card = document.createElement("div");
-      card.className = "item-card";
 
-      // Actions (check + remove)
-      const actions = document.createElement("div");
-      actions.className = "item-actions";
+function createFavoriteLi(itemId) {
+  const src = document.querySelector(`.skill-item[data-item-id="${itemId}"]`);
+  const li = document.createElement("li");
+  li.setAttribute("data-fav-item-id", itemId);
 
-      const checkBtn = document.createElement("button");
-      checkBtn.className = "check-btn";
-      checkBtn.textContent = "✓";
-      checkBtn.title = "Mark completed";
+  const card = document.createElement("div");
+  card.className = "item-card";
 
-      const removeBtn = document.createElement("button");
-      removeBtn.className = "fav-remove";
-      removeBtn.textContent = "–";
-      removeBtn.title = "Remove from this week's language study plan";
+  // --- Left-side actions ---
+  const actions = document.createElement("div");
+  actions.className = "item-actions";
 
-      actions.appendChild(checkBtn);
-      actions.appendChild(removeBtn);
+  const checkBtn = document.createElement("button");
+  checkBtn.className = "check-btn";
+  checkBtn.textContent = "✓";
+  checkBtn.title = "Mark completed";
 
-      // Title
-      const titleSpan = document.createElement("span");
-      titleSpan.className = "item-title";
-      titleSpan.textContent = src ? src.querySelector(".item-title")?.textContent || src.querySelector(".item-name")?.textContent : itemId;
+  const removeBtn = document.createElement("button");
+  removeBtn.className = "fav-remove";
+  removeBtn.textContent = "–";
+  removeBtn.title = "Remove from this week's language study plan";
 
-      // Completion line beneath
-      const line = document.createElement("div");
-      line.className = "completion-line";
-      const count = getCompletionCount(itemId);
-      if (count > 0) {
-        line.textContent = `Completed ${count} ${count === 1 ? "time" : "times"}`;
-      } else {
-        line.style.display = "none";
-      }
+  actions.appendChild(checkBtn);
+  actions.appendChild(removeBtn);
 
-      // Assemble
-      card.appendChild(actions);
-      card.appendChild(titleSpan);
-      card.appendChild(line);
-      li.appendChild(card);
+  // --- Title ---
+  const titleSpan = document.createElement("span");
+  titleSpan.className = "item-title";
+  titleSpan.textContent = src
+    ? (src.querySelector(".item-title")?.textContent || src.querySelector(".item-name")?.textContent)
+    : itemId;
 
-      // Initial check state from per-week storage
-      const weekState = readWeekCompletionState(activeWeek);
-      const isChecked = !!weekState[itemId];
-      if (isChecked) {
-        checkBtn.classList.add("checked");
-        li.classList.add("completed");
-      }
+  // --- NEW: Right-side Move/Repeat button ---
+  const moveNextBtn = document.createElement("button");
+  moveNextBtn.className = "move-next";
+  // icon & tooltip set after we know check state
 
-      // Toggle handler: increment on ON, decrement on OFF
-      checkBtn.addEventListener("click", () => {
-        const state = readWeekCompletionState(activeWeek);
-        const currentlyChecked = !!state[itemId];
-        const nowChecked = !currentlyChecked;
-        state[itemId] = nowChecked;
-        writeWeekCompletionState(activeWeek, state);
+  // Completion line
+  const line = document.createElement("div");
+  line.className = "completion-line";
+  const initialCount = getCompletionCount(itemId);
+  if (initialCount > 0) {
+    line.textContent = `Completed ${initialCount} ${initialCount === 1 ? "time" : "times"}`;
+  } else {
+    line.style.display = "none";
+  }
 
-        if (nowChecked) {
-          checkBtn.classList.add("checked");
-          li.classList.add("completed");
-          incrementCompletionCount(itemId);
-        } else {
-          checkBtn.classList.remove("checked");
-          li.classList.remove("completed");
-          decrementCompletionCount(itemId);
-        }
-      });
+  // Assemble: [actions] [title] [moveNextBtn] [line]
+  card.appendChild(actions);
+  card.appendChild(titleSpan);
+  card.appendChild(moveNextBtn);
+  card.appendChild(line);
+  li.appendChild(card);
 
-      // Remove handler
-      removeBtn.addEventListener("click", () => {
-        const set = readWeekFavorites(activeWeek);
-        set.delete(itemId);
-        writeWeekFavorites(activeWeek, set);
-        renderFavorites();
-        refreshFavoritedHints();
-      });
+  // --- State helpers ---
+  const WEEK_MAX = WEEK_COUNT; // already defined globally
+  const nextWeek = (activeWeek === WEEK_MAX) ? WEEK_MAX + 1 : activeWeek + 1; // no wrap by default; see note below
 
-      return li;
+  // Current check state (per-week)
+  const weekState = readWeekCompletionState(activeWeek);
+  let isChecked = !!weekState[itemId];
+
+  // Helper: is item already in next week's favorites?
+  function isInNextWeek() {
+    if (nextWeek > WEEK_MAX) return false; // if you keep "no next week" rule
+    const nextSet = readWeekFavorites(nextWeek);
+    return nextSet.has(itemId);
+  }
+
+  // Helper: refresh icon, tooltip, and disabled state
+  function refreshMoveButtonUI() {
+    // Icon based on checked state
+    moveNextBtn.textContent = isChecked ? "⟳" : "→"; // repeat when checked, arrow when not
+    moveNextBtn.title = isChecked ? "Repeat next week." : "Move to next week.";
+
+    // Disabled if already in next week's list
+    const alreadyThere = isInNextWeek();
+    moveNextBtn.disabled = !!alreadyThere;
+    if (alreadyThere) {
+      moveNextBtn.title = "Already in next week.";
     }
+  }
+
+  // Initial UI for the button
+  refreshMoveButtonUI();
+
+  // --- Check toggle: increment on ON, decrement on OFF ---
+  checkBtn.addEventListener("click", () => {
+    const state = readWeekCompletionState(activeWeek);
+    const currentlyChecked = !!state[itemId];
+    const nowChecked = !currentlyChecked;
+    state[itemId] = nowChecked;
+    writeWeekCompletionState(activeWeek, state);
+
+    isChecked = nowChecked;                 // local flag
+    refreshMoveButtonUI();                  // update icon & tooltip
+
+    if (nowChecked) {
+      checkBtn.classList.add("checked");
+      li.classList.add("completed");
+      incrementCompletionCount(itemId);
+    } else {
+      checkBtn.classList.remove("checked");
+      li.classList.remove("completed");
+      decrementCompletionCount(itemId);
+    }
+  });
+
+  // --- Remove handler (unchanged) ---
+  removeBtn.addEventListener("click", () => {
+    const set = readWeekFavorites(activeWeek);
+    set.delete(itemId);
+    writeWeekFavorites(activeWeek, set);
+    renderFavorites();
+    refreshFavoritedHints();
+  });
+
+  // --- NEW: Move/Repeat to NEXT week logic ---
+  moveNextBtn.addEventListener("click", () => {
+    // If you're keeping the "no next week after Week 12" rule:
+    if (nextWeek > WEEK_MAX) {
+      alert("This is Week 12; there is no next week to move to.");
+      return;
+    }
+
+    const nextSet = readWeekFavorites(nextWeek);
+    if (!nextSet.has(itemId)) {
+      nextSet.add(itemId);
+      writeWeekFavorites(nextWeek, nextSet);
+    }
+
+    // If NOT checked → remove from current week
+    if (!isChecked) {
+      const currSet = readWeekFavorites(activeWeek);
+      if (currSet.has(itemId)) {
+        currSet.delete(itemId);
+        writeWeekFavorites(activeWeek, currSet);
+      }
+    }
+
+    // Ensure next week's completion starts OFF explicitly
+    const nextWeekState = readWeekCompletionState(nextWeek);
+    if (nextWeekState[itemId] !== true) {
+      nextWeekState[itemId] = false;
+      writeWeekCompletionState(nextWeek, nextWeekState);
+    }
+
+    // Refresh UI (current list & hints)
+    renderFavorites();
+    refreshFavoritedHints();
+
+    // After re-render, our old DOM node is gone; nothing more to do here.
+    // (The new instance will compute disabled state correctly via refreshMoveButtonUI)
+  });
+
+  // Apply initial visual state
+  if (isChecked) {
+    checkBtn.classList.add("checked");
+    li.classList.add("completed");
+  }
+
+  return li;
+}
 
     /* ---------- Render favorites for the active week ---------- */
     function renderFavorites() {
@@ -1178,6 +1366,46 @@
         updateCompletionLinesForItem(id);
       });
     });
+
+  // "Next Week" navigation
+  document.getElementById("goto-next-week").addEventListener("click", () => {
+    // Choose one behavior:
+
+    // A) Stop at Week 12 (no wrap):
+    // const next = activeWeek + 1;
+    // if (next > WEEK_COUNT) {
+    //   alert("You are on Week 12. There is no next week.");
+    //   return;
+    // }
+
+    // B) Wrap from Week 12 → Week 1 (recommended for continuous planning):
+    const next = (activeWeek === WEEK_COUNT) ? 1 : activeWeek + 1;
+
+    setActiveWeek(next);
+    // Optional: scroll the page back to the favorites card so users see the new date range
+    // document.querySelector('.favorites-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+
+function refreshNextWeekButton() {
+  const btn = document.getElementById("goto-next-week");
+  btn.disabled = (activeWeek === WEEK_COUNT);
+}
+
+// Call it whenever the week changes:
+function setActiveWeek(week) {
+  activeWeek = week;
+  localStorage.setItem("activeWeek", String(week));
+  tabs.forEach(t => t.classList.toggle("active", parseInt(t.dataset.week, 10) === week));
+  renderFavorites();
+  refreshFavoritedHints();
+  updateWeekRangeDisplay();
+  refreshNextWeekButton(); // <-- add this
+}
+
+// Also call once on load after setActiveWeek(activeWeek);
+
+
   </script>
 </body>
 </html>
