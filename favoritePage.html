@@ -2,1410 +2,994 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Language" content="en">
-  <title>Infield Language Program</title>
-  <style>
-    :root{
-      --blue-700:#155fa0;
-      --blue-600:#1976d2;
-      --blue-50:#e3f2fd;
-      --text:#0f172a;
-      --muted:#64748b;
-      --border:#cbd5e1;
-      --success-bg:#c7f9cc;
-      --success-border:#2e7d32;
-      --success-text:#1b5e20;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      color: var(--text);
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Infield Language Program Planning Tool</title>
+<style>
+/* ===== THEME & BASE ===== */
+:root{
+  --text:#0f172a; --muted:#6b7280; --border:#cbd5e1; --bg:#ffffff;
+  --gray-plan-bg:#f3f4f6;
+  --green-border:#298e44; --green-bg:#dff3e6;
+  --blue-border:#027da5;  --blue-bg:#e3f2fd;
+  --yellow-border:#ffb81d;--yellow-bg:#fff4cf;
 
-    /* Top bar */
-    .top-bar{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:16px;
-      flex-wrap:wrap;
-      margin-bottom:16px;
-    }
-    .site-title{
-      margin:0;
-      font-size:2.2rem; /* larger than other headings */
-      font-weight:800;
-      letter-spacing:0.2px;
-      color: var(--blue-700);
-    }
-    .entry-date-group{
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-    .entry-date-group label{
-      font-weight:600;
-    }
-    .entry-date-group input[type="date"]{
-      padding:6px 10px;
-      border:1px solid var(--border);
-      border-radius:6px;
-      font-size:0.95rem;
-    }
+  --ok-bg:#22c55e; --ok-bg-hover:#16a34a; --ok-border:#15803d;
+}
+*{box-sizing:border-box}
+body{
+  margin:12px;background:var(--bg);color:var(--text);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.4;font-size:16px;
+}
+h1{margin:0 0 6px 0;font-size:1.8rem}
+h2{margin:18px 0 6px;font-size:1.22rem}
+h3{margin:10px 0 4px;font-size:1.02rem}
+hr{margin:18px 0;border:none;border-top:1px solid var(--border)}
 
-    h2 {
-      margin-bottom: 5px;
-      font-size:1.25rem;
-    }
-    ul {
-      list-style: none;
-      padding-left: 0;
-    }
-    li {
-      margin: 8px 0;
-      display: flex;
-      align-items: stretch;
-      flex-wrap: wrap;
-      max-width: 900px;
-    }
-    .item-name {
-      margin-left: 10px;
-      flex: 1;
-    }
-    button.add-btn {
-      cursor: pointer;
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      background-color: #f5f5f5;
-      width: 28px;
-      text-align: center;
-    }
-    button.add-btn:hover {
-      background-color: #e0e0e0;
-    }
+/* Smaller H1 on small screens */
+@media (max-width:480px){
+  h1{font-size:1.42rem;}
+}
 
-    /* Visual hint when item is favorited for current week */
-    .favorited .add-btn {
-      background-color: #d1eaff;
-      border-color: #90caf9;
-    }
+/* ===== TOP ===== */
+.top-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.notice-line{font-size:.95rem}
+.notice-info{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:.95rem;color:#222
+}
+.notice-info button{
+  border:none;background:transparent;cursor:pointer;
+  font-size:1rem;line-height:1;padding:0 2px;color:#0b6aa5
+}
+.notice-pop{
+  position:absolute; inset:auto auto auto 0;
+  max-width:600px; background:#fff; border:1px solid var(--border);
+  border-radius:8px; padding:10px 12px; box-shadow:0 8px 24px rgba(0,0,0,.12);
+  font-size:.95rem; z-index:20; display:none;
+}
+.notice-pop.show{display:block}
 
-    /* Sections and headers */
-    .section {
-      margin: 10px 0;
-      border-radius: 4px;
-    }
-    .section-header {
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 1.05rem;
-      padding: 4px 0;
-    }
-    .section-header .arrow {
-      display: inline-block;
-      width: 16px;
-      margin-right: 6px;
-      transition: transform 0.2s ease;
-    }
-    .section-header .title {
-      flex: 1;
-    }
-    .section.collapsed .section-items {
-      display: none;
-    }
-    .section.collapsed .arrow {
-      transform: rotate(0deg); /* ▶ */
-    }
-    .section:not(.collapsed) .arrow {
-      transform: rotate(90deg); /* ▼ look */
-    }
-    .section-items {
-      margin-left: 24px; /* indent items under header */
-    }
-    hr {
-      margin: 16px 0;
-    }
+/* top controls */
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-bottom:12px}
+.controls label{font-weight:600;font-size:.9rem}
+.controls select,.controls input[type="date"]{
+  padding:6px 8px;font-size:.95rem;border-radius:6px;border:1px solid var(--border)
+}
 
-    /* Week pill tabs */
-    .week-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .week-tabs .tab {
-      appearance: none;
-      border: 1px solid var(--border);
-      background: #f8fafc;
-      color: var(--text);
-      padding: 6px 12px;
-      border-radius: 9999px; /* pill */
-      cursor: pointer;
-      font-size: 0.95rem;
-      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-    }
-    .week-tabs .tab:hover {
-      background: #eef2ff;
-      border-color: #94a3b8;
-    }
-    .week-tabs .tab.active {
-      background: var(--blue-600);
-      border-color: var(--blue-600);
-      color: #fff;
-    }
+/* ===== PLAN ===== */
+.plan-wrapper{
+  border:2px solid #000;background:var(--gray-plan-bg);
+  border-radius:10px;padding:10px;margin-bottom:14px
+}
+.plan-title{font-weight:800;font-size:1.05rem}
+.plan-dates{color:var(--muted);margin-top:1px;margin-bottom:6px;font-size:.9rem}
+.plan-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.plan-box{border-radius:9px;padding:8px}
+.plan-box h4{margin:0 0 2px;font-size:.97rem}
+.green-box{border:2px solid var(--green-border);background:var(--green-bg)}
+.blue-box{ border:2px solid var(--blue-border); background:var(--blue-bg)}
+.yellow-box{border:2px solid var(--yellow-border);background:var(--yellow-bg)}
+.plan-list{list-style:none;padding-left:0;margin:0}
 
-    /* Favorites card */
-    .favorites-card{
-      border:1.5px solid var(--blue-600);
-      background: var(--blue-50);
-      border-radius:12px;
-      padding:16px;
-    }
-    .favorites-header {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-    }
-    .favorites-empty {
-      color: var(--muted);
-      font-style: italic;
-      margin-top: 4px;
-    }
+/* ===== CARDS (compact) ===== */
+.card{
+  background:#fff;border:1px solid var(--border);border-radius:8px;
+  padding:6px 8px;margin:5px 0;box-shadow:0 1px 2px rgba(0,0,0,.05)
+}
+/* top row: remove (left) + circle-check + number/title + right actions (link + move) */
+.card-row{display:flex;gap:6px}
+.card-row.top{align-items:flex-start} /* top-align row so circle/number hug first line */
+.card-title{display:flex;align-items:flex-start;gap:6px;flex:1;min-width:0}
+.card-title .card-num{
+  font-weight:400; /* un-bold number */
+  font-size:.92rem;white-space:nowrap;line-height:1.1;
+}
+.card-title .card-title-text{
+  font-weight:400;font-size:.9rem;line-height:1.25;white-space:normal;word-break:break-word
+}
+/* left actions: keep remove vertically centered within its own group */
+.card-actions-left{display:flex;gap:6px;align-items:center}
+.right-actions{display:flex;align-items:flex-start;gap:8px}
 
+/* completion line */
+.completion-line{color:var(--muted);font-size:.8rem;width:100%;margin-top:3px}
 
-    /* Footer row inside the favorites card */
-    .favorites-footer{
-      display:flex;
-      justify-content:space-between; /* left group and right button on same row */
-      align-items:center;
-      margin-top:12px;
-    }
+/* Buttons compact */
+.add-btn,.remove-btn,.move-next,.btn{
+  padding:4px 8px;border-radius:6px;border:1px solid var(--border);
+  background:#fff;cursor:pointer;font-size:.85rem;line-height:1
+}
+.add-btn{padding:2px 7px}
+.remove-btn{padding:2px 7px}
 
-    .footer-left{
-      display:flex;
-      gap:8px;
-    }
+/* disable add when already in plan */
+.add-btn:disabled{opacity:.5;background:#f2f2f2;cursor:not-allowed}
 
-    .footer-right{
-      margin-left:auto; /* push to right edge */
-    }
+/* ext link only visible in plan; small & snug */
+.ext-link{display:none;text-decoration:none;font-size:1.05rem;line-height:1}
+.in-plan .ext-link{display:inline-flex}
 
-    /* Emphasis for Next Week button */
-    .next-week-btn{
-      font-weight:700;            /* bold label */
-      background:#fff;            /* keep consistent with .btn */
-      border:1px solid var(--blue-600);
-      color: var(--blue-700);
-      padding:6px 12px;
-    }
+/* icon-only move/repeat, no border */
+.move-next{
+  background:transparent;border:none;min-width:24px;height:24px;
+  display:inline-flex;align-items:center;justify-content:center;color:#111;padding:0
+}
+.move-next:hover{color:#0b6aa5}
+.move-next:disabled{opacity:.45;cursor:not-allowed}
+.move-next{font-size:1.2rem}
+.move-next.is-repeat{font-size:1.45rem}
 
-    .next-week-btn:hover{
-      background:#e6f0ff;         /* gentle hover */
-    }
-    ``
+/* Circle checkbox (unchecked = outline circle; checked = filled green w/ check) */
+.circle-check{
+  width:20px;height:20px;min-width:20px;min-height:20px;border-radius:50%;
+  border:2px solid #9ca3af;background:#fff;display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;line-height:1;font-size:.9rem;color:#fff;
+  align-self:flex-start; /* ensure it hugs the top */
+}
+.circle-check[aria-checked="true"]{
+  background:var(--ok-bg); border-color:var(--ok-border);
+}
+.circle-check .mark{display:none}
+.circle-check[aria-checked="true"] .mark{display:block}
 
-    /* Generic disabled look for .btn */
-    .btn:disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
-      background: #f5f5f5;
-      border-color: #ddd;
-      color: #8a8a8a;
-    }
+/* completed style */
+.completed .card-title-text{text-decoration:line-through;color:var(--muted)}
 
-    /* Optional: specific tweak for the Next Week button */
-    .next-week-btn:disabled {
-      font-weight: 700;          /* stays bold but clearly disabled */
-      background: #f5f5f5;
-      color: #8a8a8a;
-      border-color: #ddd;
-    }
+/* ===== PLAN ACTIONS ===== */
+.plan-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.plan-actions .spacer{flex:1}
+.btn:disabled,.move-next:disabled{opacity:.5;cursor:not-allowed}
 
+/* ===== STICKY MINI ===== */
+.sticky-mini{
+  display:none;position:sticky;top:0;background:var(--gray-plan-bg);
+  padding:6px 10px;border-bottom:2px solid #000;font-weight:700;cursor:pointer;z-index:10
+}
+.sticky-mini.show{display:block}
 
-    .fav-remove, .check-btn, .btn {
-      cursor: pointer;
-      padding: 6px 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--text);
-      text-align: center;
-    }
-    .fav-remove, .check-btn {
-      padding: 2px 6px;
-      border-radius: 4px;
-      background-color: #f5f5f5;
-      width: 28px;
-      text-align: center;
-    }
-    .fav-remove:hover, .check-btn:hover, .btn:hover {
-      background-color: #f0f6ff;
-    }
+/* ===== ACCORDIONS ===== */
+.section{margin-bottom:8px;border-bottom:1px dashed var(--border);padding-bottom:6px}
+.section-header{cursor:pointer;font-size:.92rem;color:#334155;font-weight:600;display:flex;gap:6px;align-items:center}
+.section-header .arrow{transition:transform .15s ease}
+.section.collapsed .section-items{display:none}
+.section.collapsed .section-header .arrow{transform:rotate(0deg)}
+.section:not(.collapsed) .section-header .arrow{transform:rotate(90deg)}
+.section-items{list-style:none;padding-left:0;margin-top:4px}
+.source-list{list-style:none;margin:0;padding:0}
+.source-list .card{padding:6px 8px;margin:5px 0}
 
-    /* Right-arrow button for favorites cards */
-    .move-next {
-      cursor: pointer;
-      padding: 2px 4px;
-      border-radius: 4px;
-      border: 1px solid var(--border);
-      background-color: #f5f5f5;
-      min-width: 32px;
-      text-align: center;
-      /* Place it on the right side of the card’s top row */
-      margin-left: auto;
-     font-size: 1.2rem;
-    }
-    .move-next:hover {
-      background-color: #f0f6ff;
-    }
+/* ===== FOOTER ===== */
+footer{margin-top:20px;text-align:center;color:#555;font-size:.82rem}
 
-
-    .move-next:disabled {
-      cursor: not-allowed;
-      opacity: .5;
-      background-color: #f5f5f5;
-      border-color: #ddd;
-    }
-
-
-    .check-btn.checked {
-      background-color: var(--success-bg);
-      border-color: var(--success-border);
-      color: var(--success-text);
-    }
-    .completed .item-title {
-      text-decoration: line-through;
-      color: var(--muted);
-    }
-    .week-range{
-      color: var(--muted);
-      margin-top: 2px;
-      margin-bottom: 10px;
-      font-size:0.95rem;
-    }
-
-    /* Card layout for items */
-    .item-card {
-      background:#fff;
-      border:1px solid #ddd;
-      border-radius:12px;
-      padding:12px;
-      box-shadow:0 1px 3px rgba(0,0,0,0.12);
-      width:100%;
-      display:flex;
-      align-items:flex-start;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .item-actions {
-      display:flex;
-      gap:6px;
-      align-items:flex-start;
-    }
-    .item-title {
-      font-weight:600;
-      flex:1 1 auto;
-      min-width:250px;
-    }
-    .completion-line {
-      color: var(--muted);
-      font-size: 0.9rem;
-      margin-top: 6px;
-      width:100%;
-    }
-
-    /* All Tasks toolbar */
-    .tasks-toolbar{
-      display:flex;
-      gap:8px;
-      margin-bottom:8px;
-    }
-  </style>
+/* ===== RESPONSIVE ===== */
+@media (min-width:800px){ .plan-grid{grid-template-columns:1fr 1fr 1fr} }
+</style>
 </head>
 <body>
-  <!-- Top bar: title + entry date -->
-  <div class="top-bar">
-    <h1 class="site-title">Infield Language Program</h1>
-    <div class="entry-date-group">
-      <label for="entry-date">Infield Entry Date</label>
-      <input type="date" id="entry-date" />
+  <div class="top-row">
+    <h1>Infield Language Program Planning Tool</h1>
+
+    <!-- Option C: one-line microcopy + info button with a tiny popover -->
+    <div class="notice-info" style="position:relative;">
+      <span class="notice-line">Data stays on this device.</span>
+      <button id="noticeBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="noticePop" title="More info">ⓘ</button>
+      <div id="noticePop" class="notice-pop" role="dialog" aria-modal="false" aria-labelledby="noticeTitle">
+        <strong id="noticeTitle">How your data is saved</strong>
+        <p style="margin:.35rem 0 0;">
+          Your data is saved only in your browser on this device. To avoid losing it,
+          use the same browser and don’t clear your cache. We also recommend writing down
+          your language study plan each week as a backup.
+        </p>
+      </div>
     </div>
   </div>
 
-  <!-- Week tabs -->
-  <div class="week-tabs" role="tablist" aria-label="Weeks">
-    <button class="tab active" data-week="1">Week 1</button>
-    <button class="tab" data-week="2">Week 2</button>
-    <button class="tab" data-week="3">Week 3</button>
-    <button class="tab" data-week="4">Week 4</button>
-    <button class="tab" data-week="5">Week 5</button>
-    <button class="tab" data-week="6">Week 6</button>
-    <button class="tab" data-week="7">Week 7</button>
-    <button class="tab" data-week="8">Week 8</button>
-    <button class="tab" data-week="9">Week 9</button>
-    <button class="tab" data-week="10">Week 10</button>
-    <button class="tab" data-week="11">Week 11</button>
-    <button class="tab" data-week="12">Week 12</button>
-  </div>
-
-  <!-- Favorites section (renamed + wrapped) -->
-  <div class="favorites-card">
-    <div class="favorites-header">
-      <h2>This Week’s Language Study Plan</h2>
+  <div class="controls">
+    <div>
+      <label for="week-select">Week</label><br/>
+      <select id="week-select"></select>
     </div>
-    <div id="week-date-range" class="week-range"></div>
-    <ul id="favorites-list"></ul>
-
-    <!-- Clear actions footer -->
-    
-<div class="favorites-footer">
-  <div class="footer-left">
-    <button id="clear-week" class="btn">Clear Week</button>
-    <button id="clear-all" class="btn">Clear All</button>
-  </div>
-  <div class="footer-right">
-    <button id="goto-next-week" class="btn next-week-btn"><strong>Next Week →</strong></button>
-  </div>
-</div>
-
-  </div>
-
-  <hr>
-  <h2>All Tasks and Skills</h2>
-
-  <!-- Toolbar: Expand/Collapse All -->
-  <div class="tasks-toolbar">
-    <button id="expand-all" class="btn">Expand All</button>
-    <button id="collapse-all" class="btn">Collapse All</button>
-  </div>
-
-  <!-- === SECTIONS (1–21) WITH ITEMS (1–47) === -->
-
-  <!-- SECTION 1: Lesson 1 -->
-  <div class="section" data-section-id="lesson1">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Lesson 1: The Message of the Restoration</span>
+    <div>
+      <label for="entry-date">Infield Entry Date</label><br/>
+      <input type="date" id="entry-date"/>
     </div>
-    <ul class="section-items" data-section-id="lesson1">
-      <li class="skill-item" data-item-id="item1" data-original-section="lesson1" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">Lesson 1: The Message of the Restoration</span>
-      </li>
-    </ul>
   </div>
 
-  <!-- SECTION 2: Lesson 2 -->
-  <div class="section" data-section-id="lesson2">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Lesson 2: Heavenly Father’s Plan of Salvation</span>
+  <!-- Sticky shows week number -->
+  <div id="stickyMini" class="sticky-mini">→ Week 1 Study Plan</div>
+
+  <div id="planWrapper" class="plan-wrapper">
+    <div class="plan-title" id="planTitle"></div>
+    <div class="plan-dates" id="planDates"></div>
+
+    <div class="plan-grid">
+      <div class="plan-box green-box">
+        <h4>Preach My Gospel study section</h4>
+        <ul id="planPMG" class="plan-list"></ul>
+      </div>
+      <div class="plan-box blue-box">
+        <h4>Language Skills</h4>
+        <ul id="planSkills" class="plan-list"></ul>
+      </div>
+      <div class="plan-box yellow-box">
+        <h4>Evaluate Your Language Study</h4>
+        <ul id="planEval" class="plan-list"></ul>
+      </div>
     </div>
-    <ul class="section-items" data-section-id="lesson2">
-      <li class="skill-item" data-item-id="item2" data-original-section="lesson2" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">Lesson 2: Heavenly Father’s Plan of Salvation</span>
-      </li>
-    </ul>
-  </div>
 
-  <!-- SECTION 3: Lesson 3 -->
-  <div class="section" data-section-id="lesson3">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Lesson 3: The Gospel of Jesus Christ</span>
+    <div class="plan-actions">
+      <button class="btn" id="clearWeek">Clear Week</button>
+      <button class="btn" id="clearAll">Clear All</button>
+      <button class="btn" id="copyPlan">Copy Plan</button>
+      <div class="spacer"></div>
+      <button class="btn" id="nextWeek">Next Week →</button>
     </div>
-    <ul class="section-items" data-section-id="lesson3">
-      <li class="skill-item" data-item-id="item3" data-original-section="lesson3" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">Lesson 3: The Gospel of Jesus Christ</span>
-      </li>
-    </ul>
   </div>
 
-  <!-- SECTION 4: Pray with Faith in Jesus Christ -->
-  <div class="section" data-section-id="pray-faith">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Pray with Faith in Jesus Christ</span>
-    </div>
-    <ul class="section-items" data-section-id="pray-faith">
-      <li class="skill-item" data-item-id="item4" data-original-section="pray-faith" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Pray for those you are teaching.” (105)</span>
-      </li>
-      <li class="skill-item" data-item-id="item5" data-original-section="pray-faith" data-order="2">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Pray simply and sincerely that God will bless the people you are teaching” (181)</span>
-      </li>
-      <li class="skill-item" data-item-id="item6" data-original-section="pray-faith" data-order="3">
-        <button class="add-btn">+</button>
-        <span class="item-name">“As needed, teach the person how to pray” (72)</span>
-      </li>
-    </ul>
-  </div>
+  <hr />
 
-  <!-- SECTION 5: Talk with Everyone -->
-  <div class="section" data-section-id="talk-everyone">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Talk with Everyone</span>
-    </div>
-    <ul class="section-items" data-section-id="talk-everyone">
-      <li class="skill-item" data-item-id="item7" data-original-section="talk-everyone" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Ask a question and listen to their response” (166)</span>
-      </li>
-      <li class="skill-item" data-item-id="item8" data-original-section="talk-everyone" data-order="2">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Ask about their families. Help them see how the restored gospel can bless their families.” (166)</span>
-      </li>
-      <li class="skill-item" data-item-id="item9" data-original-section="talk-everyone" data-order="3">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Share with them your purpose as a missionary and why you decided to serve a mission.” (166)</span>
-      </li>
-    </ul>
-  </div>
+  <h2>Study Topic Options</h2>
 
-  <!-- SECTION 6: Unite with Members -->
-  <div class="section" data-section-id="unite-members">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Unite with Members</span>
-    </div>
-    <ul class="section-items" data-section-id="unite-members">
-      <li class="skill-item" data-item-id="item10" data-original-section="unite-members" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Build Strong Relationships with Local Leaders” (167)</span>
-      </li>
-      <li class="skill-item" data-item-id="item11" data-original-section="unite-members" data-order="2">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Support Members in Their Efforts to Share the Gospel” (168)</span>
-      </li>
-      <li class="skill-item" data-item-id="item12" data-original-section="unite-members" data-order="3">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Promise Blessings for Sharing the Gospel” (169)</span>
-      </li>
-    </ul>
-  </div>
+  <!-- PMG as an accordion under “Preach My Gospel Study” -->
+  <h3>Preach My Gospel Study</h3>
+  <div id="pmgSource"></div>
 
-  <!-- SECTION 7: Find People Where They Are -->
-  <div class="section" data-section-id="find-people">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Find People Where They Are</span>
-    </div>
-    <ul class="section-items" data-section-id="find-people">
-      <li class="skill-item" data-item-id="item13" data-original-section="find-people" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Find out what is most important to them” (171)</span>
-      </li>
-      <li class="skill-item" data-item-id="item14" data-original-section="find-people" data-order="2">
-        <button class="add-btn">+</button>
-        <span class="item-name">Seek to understand others’ interests (171)</span>
-      </li>
-      <li class="skill-item" data-item-id="item15" data-original-section="find-people" data-order="3">
-        <button class="add-btn">+</button>
-        <span class="item-name">Discuss challenges people face (171)</span>
-      </li>
-    </ul>
-  </div>
+  <h3>Language Tasks and Skills</h3>
+  <div id="languageSource"></div>
 
-  <!-- SECTION 8: Invite the Spirit as You Begin Teaching -->
-  <div class="section" data-section-id="invite-spirit">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Invite the Spirit as You Begin Teaching</span>
-    </div>
-    <ul class="section-items" data-section-id="invite-spirit">
-      <li class="skill-item" data-item-id="item16" data-original-section="invite-spirit" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Ask a few simple questions to help you understand their background and their expectations” (181)</span>
-      </li>
-      <li class="skill-item" data-item-id="item17" data-original-section="invite-spirit" data-order="2">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Explain that you would like to begin and end each lesson with prayer.” (181)</span>
-      </li>
-      <li class="skill-item" data-item-id="item18" data-original-section="invite-spirit" data-order="3">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Give a simple overview of what you will teach.” (182)</span>
-      </li>
-    </ul>
-  </div>
+  <footer>
+    The code and functionality of this page were created using AI.
+  </footer>
 
-  <!-- SECTION 9: Use the Scriptures -->
-  <div class="section" data-section-id="use-scriptures">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Use the Scriptures</span>
-    </div>
-    <ul class="section-items" data-section-id="use-scriptures">
-      <li class="skill-item" data-item-id="item19" data-original-section="use-scriptures" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Introduce the Scripture” (183)</span>
-      </li>
-      <li class="skill-item" data-item-id="item20" data-original-section="use-scriptures" data-order="2">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Apply the Scriptures” (183)</span>
-      </li>
-      <li class="skill-item" data-item-id="item21" data-original-section="use-scriptures" data-order="3">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Invite and Help People to Read on Their Own” (183)</span>
-      </li>
-    </ul>
-  </div>
+<script>
+/* =========================================================
+   CONTENT MAPS — EDIT THESE ONLY
+   ========================================================= */
 
-  <!-- SECTION 10: Share Your Testimony (Part 1) -->
-  <div class="section" data-section-id="share-testimony-1">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Share Your Testimony (Part 1)</span>
-    </div>
-    <ul class="section-items" data-section-id="share-testimony-1">
-      <li class="skill-item" data-item-id="item22" data-original-section="share-testimony-1" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Share a brief experience about how you gained this testimony.” (185)</span>
-      </li>
-      <li class="skill-item" data-item-id="item23" data-original-section="share-testimony-1" data-order="2">
-        <button class="add-btn">+</button>
-        <span class="item-name">“When your companion is teaching, share your testimony to provide a second witness” (185)</span>
-      </li>
-      <li class="skill-item" data-item-id="item24" data-original-section="share-testimony-1" data-order="3">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Share your testimony that the principle you are teaching will bless the person’s life if he or she will follow it.” (185)</span>
-      </li>
-    </ul>
-  </div>
+// PMG Topics (green box source)
+const PMG_TOPICS = [
+  { id: "pmg1", title: "Prepare Yourself Spiritually", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title3-p7#title3" },
+  { id: "pmg2", title: "Be Dedicated and Diligent", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title4-p14#title4" },
+  { id: "pmg3", title: "Principles of Language Learning", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title6-p21#title6" },
+  { id: "pmg4", title: "Create a Language Study Plan", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title12-p35#title12" },
+  { id: "pmg5", title: "Learn with Your Companions", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title14-figure4_p3#title14" },
+  { id: "pmg6", title: "Culture and Language Learning", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title16-figure5_p2#title16" },
+  { id: "pmg7", title: "The Gift of Tongues", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title18-figure6_p6#title18" },
+  { id: "pmg8", title: "Ideas for Study and Application: Personal Study", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title19-aside2_p2#title19" },
+  { id: "pmg9", title: "Ideas for Study and Application: Companion Study and Companion Exchange", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=aside2_title3-aside2_p7#aside2_title3" }
+];
 
-  <!-- SECTION 11: Teach for Understanding -->
-  <div class="section" data-section-id="teach-understanding">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Teach for Understanding</span>
-    </div>
-    <ul class="section-items" data-section-id="teach-understanding">
-      <li class="skill-item" data-item-id="item25" data-original-section="teach-understanding" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Ask questions to help people think about what you have taught.” (189)</span>
-      </li>
-      <li class="skill-item" data-item-id="item26" data-original-section="teach-understanding" data-order="2">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Explain words, phrases, and ideas.” (189)</span>
-      </li>
-      <li class="skill-item" data-item-id="item27" data-original-section="teach-understanding" data-order="3">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Keep your teaching simple and brief.” (189)</span>
-      </li>
-    </ul>
-  </div>
+// Language sections (blue box source + accordions) — full structure
+const LANGUAGE_SECTIONS = [
+  { id:"lesson1", title:"Lesson 1: The Message of the Restoration",
+    items:[ { id:"item1", title:"Lesson 1: The Message of the Restoration", link:"#"} ] },
+  { id:"lesson2", title:"Lesson 2: Heavenly Father’s Plan of Salvation",
+    items:[ { id:"item2", title:"Lesson 2: Heavenly Father’s Plan of Salvation", link:"#"} ] },
+  { id:"lesson3", title:"Lesson 3: The Gospel of Jesus Christ",
+    items:[ { id:"item3", title:"Lesson 3: The Gospel of Jesus Christ", link:"#"} ] },
 
-  <!-- SECTION 12: Ask Questions -->
-  <div class="section" data-section-id="ask-questions">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Ask Questions</span>
-    </div>
-    <ul class="section-items" data-section-id="ask-questions">
-      <li class="skill-item" data-item-id="item28" data-original-section="ask-questions" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Ask questions that help people feel the Spirit.” (190)</span>
-      </li>
-      <li class="skill-item" data-item-id="item29" data-original-section="ask-questions" data-order="2">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Ask questions that help you know how well people understand what you are teaching.” (190)</span>
-      </li>
-      <li class="skill-item" data-item-id="item30" data-original-section="ask-questions" data-order="3">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Ask questions that help people apply what they learn.” (191)</span>
-      </li>
-    </ul>
-  </div>
+  { id:"pray-faith", title:"Pray with Faith in Jesus Christ",
+    items:[
+      { id:"item4", title:"“Pray for those you are teaching.” (105)", link:"#"},
+      { id:"item5", title:"“Pray simply and sincerely that God will bless the people you are teaching” (181)", link:"#"},
+      { id:"item6", title:"“As needed, teach the person how to pray” (72)", link:"#"}
+    ]},
 
-  <!-- SECTION 13: Extend Invitations -->
-  <div class="section" data-section-id="extend-invitations">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Extend Invitations</span>
-    </div>
-    <ul class="section-items" data-section-id="extend-invitations">
-      <li class="skill-item" data-item-id="item31" data-original-section="extend-invitations" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Invite with kind and clear language:” Church (203)</span>
-      </li>
-      <li class="skill-item" data-item-id="item32" data-original-section="extend-invitations" data-order="2">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Invite with kind and clear language:” Baptism (203)</span>
-      </li>
-      <li class="skill-item" data-item-id="item33" data-original-section="extend-invitations" data-order="3">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Invite with kind and clear language:” Read the scriptures (203)</span>
-      </li>
-    </ul>
-  </div>
+  { id:"talk-everyone", title:"Talk with Everyone",
+    items:[
+      { id:"item7", title:"“Ask a question and listen to their response” (166)", link:"#"},
+      { id:"item8", title:"“Ask about their families. Help them see how the restored gospel can bless their families.” (166)", link:"#"},
+      { id:"item9", title:"“Share with them your purpose as a missionary and why you decided to serve a mission.” (166)", link:"#"}
+    ]},
 
-  <!-- SECTION 14: Promise People Blessings -->
-  <div class="section" data-section-id="promise-blessings">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Promise People Blessings</span>
-    </div>
-    <ul class="section-items" data-section-id="promise-blessings">
-      <li class="skill-item" data-item-id="item34" data-original-section="promise-blessings" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Prayerfully decide what blessings to promise each person as you extend invitations.” (204)</span>
-      </li>
-      <li class="skill-item" data-item-id="item35" data-original-section="promise-blessings" data-order="2">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Assure [those you teach] that God will bless them as they strive to do His will.” (204)</span>
-      </li>
-      <li class="skill-item" data-item-id="item36" data-original-section="promise-blessings" data-order="3">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Help [those you teach] understand that opposition is an opportunity to grow by choosing to follow Christ even when it is difficult” (204)</span>
-      </li>
-    </ul>
-  </div>
+  { id:"unite-members", title:"Unite with Members",
+    items:[
+      { id:"item10", title:"“Build Strong Relationships with Local Leaders” (167)", link:"#"},
+      { id:"item11", title:"“Support Members in Their Efforts to Share the Gospel” (168)", link:"#"},
+      { id:"item12", title:"“Promise Blessings for Sharing the Gospel” (169)", link:"#"}
+    ]},
 
-  <!-- SECTION 15: Share Your Testimony (Part 2) -->
-  <div class="section" data-section-id="share-testimony-2">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Share Your Testimony (Part 2)</span>
-    </div>
-    <ul class="section-items" data-section-id="share-testimony-2">
-      <li class="skill-item" data-item-id="item37" data-original-section="share-testimony-2" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Share your testimony whenever you extend an invitation and promise blessings.” (205)</span>
-      </li>
-      <li class="skill-item" data-item-id="item38" data-original-section="share-testimony-2" data-order="2">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Tell how you have been blessed as you have lived the principle you are teaching.” (205)</span>
-      </li>
-      <li class="skill-item" data-item-id="item39" data-original-section="share-testimony-2" data-order="3">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Share your testimony that the principle will bless the person’s life as he or she lives it.” (205)</span>
-      </li>
-    </ul>
-  </div>
+  { id:"find-people", title:"Find People Where They Are",
+    items:[
+      { id:"item13", title:"“Find out what is most important to them” (171)", link:"#"},
+      { id:"item14", title:"Seek to understand others’ interests (171)", link:"#"},
+      { id:"item15", title:"Discuss challenges people face (171)", link:"#"}
+    ]},
 
-  <!-- SECTION 16: Help People Keep Their Commitments -->
-  <div class="section" data-section-id="keep-commitments">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Help People Keep Their Commitments</span>
-    </div>
-    <ul class="section-items" data-section-id="keep-commitments">
-      <li class="skill-item" data-item-id="item40" data-original-section="keep-commitments" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Encourage and Help People in Your Daily Contact” (206)</span>
-      </li>
-      <li class="skill-item" data-item-id="item41" data-original-section="keep-commitments" data-order="2">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Have the Influence of the Holy Ghost in Your Daily Contact” (206)</span>
-      </li>
-      <li class="skill-item" data-item-id="item42" data-original-section="keep-commitments" data-order="3">
-        <button class="add-btn">+</button>
-        <span class="item-name">“Show Love” (207)</span>
-      </li>
-    </ul>
-  </div>
+  { id:"invite-spirit", title:"Invite the Spirit as You Begin Teaching",
+    items:[
+      { id:"item16", title:"“Ask a few simple questions to help you understand their background and their expectations” (181)", link:"#"},
+      { id:"item17", title:"“Explain that you would like to begin and end each lesson with prayer.” (181)", link:"#"},
+      { id:"item18", title:"“Give a simple overview of what you will teach.” (182)", link:"#"}
+    ]},
 
-  <!-- SECTION 17: Schedule Appointments -->
-  <div class="section" data-section-id="schedule-appointments">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Schedule Appointments</span>
-    </div>
-    <ul class="section-items" data-section-id="schedule-appointments">
-      <li class="skill-item" data-item-id="item43" data-original-section="schedule-appointments" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">Schedule Appointments</span>
-      </li>
-    </ul>
-  </div>
+  { id:"use-scriptures", title:"Use the Scriptures",
+    items:[
+      { id:"item19", title:"“Introduce the Scripture” (183)", link:"#"},
+      { id:"item20", title:"“Apply the Scriptures” (183)", link:"#"},
+      { id:"item21", title:"“Invite and Help People to Read on Their Own” (183)", link:"#"}
+    ]},
 
-  <!-- SECTION 18: Talk about Food -->
-  <div class="section" data-section-id="talk-food">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Talk about Food</span>
-    </div>
-    <ul class="section-items" data-section-id="talk-food">
-      <li class="skill-item" data-item-id="item44" data-original-section="talk-food" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">Talk about Food</span>
-      </li>
-    </ul>
-  </div>
+  { id:"share-testimony-1", title:"Share Your Testimony (Part 1)",
+    items:[
+      { id:"item22", title:"“Share a brief experience about how you gained this testimony.” (185)", link:"#"},
+      { id:"item23", title:"“When your companion is teaching, share your testimony to provide a second witness” (185)", link:"#"},
+      { id:"item24", title:"“Share your testimony that the principle you are teaching will bless the person’s life if he or she will follow it.” (185)", link:"#"}
+    ]},
 
-  <!-- SECTION 19: Talk about Health -->
-  <div class="section" data-section-id="talk-health">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Talk about Health</span>
-    </div>
-    <ul class="section-items" data-section-id="talk-health">
-      <li class="skill-item" data-item-id="item45" data-original-section="talk-health" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">Talk about Health</span>
-      </li>
-    </ul>
-  </div>
+  { id:"teach-understanding", title:"Teach for Understanding",
+    items:[
+      { id:"item25", title:"“Ask questions to help people think about what you have taught.” (189)", link:"#"},
+      { id:"item26", title:"“Explain words, phrases, and ideas.” (189)", link:"#"},
+      { id:"item27", title:"“Keep your teaching simple and brief.” (189)", link:"#"}
+    ]},
 
-  <!-- SECTION 20: Transportation -->
-  <div class="section" data-section-id="transportation">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Transportation</span>
-    </div>
-    <ul class="section-items" data-section-id="transportation">
-      <li class="skill-item" data-item-id="item46" data-original-section="transportation" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">Transportation</span>
-      </li>
-    </ul>
-  </div>
+  { id:"ask-questions", title:"Ask Questions",
+    items:[
+      { id:"item28", title:"“Ask questions that help people feel the Spirit.” (190)", link:"#"},
+      { id:"item29", title:"“Ask questions that help you know how well people understand what you are teaching.” (190)", link:"#"},
+      { id:"item30", title:"“Ask questions that help people apply what they learn.” (191)", link:"#"}
+    ]},
 
-  <!-- SECTION 21: Daily Life Topic of Choice -->
-  <div class="section" data-section-id="daily-life">
-    <div class="section-header">
-      <span class="arrow">▶</span>
-      <span class="title">Daily Life Topic of Choice</span>
-    </div>
-    <ul class="section-items" data-section-id="daily-life">
-      <li class="skill-item" data-item-id="item47" data-original-section="daily-life" data-order="1">
-        <button class="add-btn">+</button>
-        <span class="item-name">Daily Life Topic of Choice</span>
-      </li>
-    </ul>
-  </div>
+  { id:"extend-invitations", title:"Extend Invitations",
+    items:[
+      { id:"item31", title:"“Invite with kind and clear language:” Church (203)", link:"#"},
+      { id:"item32", title:"“Invite with kind and clear language:” Baptism (203)", link:"#"},
+      { id:"item33", title:"“Invite with kind and clear language:” Read the scriptures (203)", link:"#"}
+    ]},
 
-  <script>
-    /* ---------- DOM refs ---------- */
-    const favoritesListEl = document.getElementById("favorites-list");
-    const sections = document.querySelectorAll(".section");
-    const tabs = document.querySelectorAll(".week-tabs .tab");
-    const entryDateEl = document.getElementById("entry-date");
-    const weekRangeEl = document.getElementById("week-date-range");
+  { id:"promise-blessings", title:"Promise People Blessings",
+    items:[
+      { id:"item34", title:"“Prayerfully decide what blessings to promise each person as you extend invitations.” (204)", link:"#"},
+      { id:"item35", title:"“Assure [those you teach] that God will bless them as they strive to do His will.” (204)", link:"#"},
+      { id:"item36", title:"“Help [those you teach] understand that opposition is an opportunity to grow by choosing to follow Christ even when it is difficult” (204)", link:"#"}
+    ]},
 
-    const WEEK_COUNT = 12;
-    const getWeekKey = (week) => `favorites_week_${week}`;
-    const getWeekCompletionKey = (week) => `completionState_week_${week}`;
+  { id:"share-testimony-2", title:"Share Your Testimony (Part 2)",
+    items:[
+      { id:"item37", title:"“Share your testimony whenever you extend an invitation and promise blessings.” (205)", link:"#"},
+      { id:"item38", title:"“Tell how you have been blessed as you have lived the principle you are teaching.” (205)", link:"#"},
+      { id:"item39", title:"“Share your testimony that the principle will bless the person’s life as he or she lives it.” (205)", link:"#"}
+    ]},
 
-    /* ---------- localStorage helpers ---------- */
-    const readWeekFavorites = (week) => {
-      try {
-        return new Set(JSON.parse(localStorage.getItem(getWeekKey(week)) || "[]"));
-      } catch {
-        return new Set();
-      }
-    };
-    const writeWeekFavorites = (week, setOrArray) => {
-      const arr = Array.isArray(setOrArray) ? setOrArray : Array.from(setOrArray);
-      localStorage.setItem(getWeekKey(week), JSON.stringify(arr));
-    };
+  { id:"keep-commitments", title:"Help People Keep Their Commitments",
+    items:[
+      { id:"item40", title:"“Encourage and Help People in Your Daily Contact” (206)", link:"#"},
+      { id:"item41", title:"“Have the Influence of the Holy Ghost in Your Daily Contact” (206)", link:"#"},
+      { id:"item42", title:"“Show Love” (207)", link:"#"}
+    ]},
 
-    const readCompletionCounts = () => {
-      try {
-        return JSON.parse(localStorage.getItem("completionCounts") || "{}") || {};
-      } catch {
-        return {};
-      }
-    };
-    const writeCompletionCounts = (obj) => {
-      localStorage.setItem("completionCounts", JSON.stringify(obj));
-    };
-    const incrementCompletionCount = (itemId) => {
-      const counts = readCompletionCounts();
-      counts[itemId] = (counts[itemId] || 0) + 1;
-      writeCompletionCounts(counts);
-      updateCompletionLinesForItem(itemId);
-    };
-    const decrementCompletionCount = (itemId) => {
-      const counts = readCompletionCounts();
-      const current = counts[itemId] || 0;
-      counts[itemId] = Math.max(0, current - 1);
-      writeCompletionCounts(counts);
-      updateCompletionLinesForItem(itemId);
-    };
-    const getCompletionCount = (itemId) => {
-      const counts = readCompletionCounts();
-      return counts[itemId] || 0;
-    };
+  { id:"schedule-appointments", title:"Schedule Appointments",
+    items:[ { id:"item43", title:"Schedule Appointments", link:"#"} ] },
 
-    const readWeekCompletionState = (week) => {
-      try {
-        return JSON.parse(localStorage.getItem(getWeekCompletionKey(week)) || "{}") || {};
-      } catch {
-        return {};
-      }
-    };
-    const writeWeekCompletionState = (week, obj) => {
-      localStorage.setItem(getWeekCompletionKey(week), JSON.stringify(obj));
-    };
+  { id:"talk-food", title:"Talk about Food",
+    items:[ { id:"item44", title:"Talk about Food", link:"#"} ] },
 
-    // Migrate legacy single favorites => Week 1 (one-time)
-    (function migrateLegacy(){
-      const legacyRaw = localStorage.getItem("favorites"); // old key
-      if (legacyRaw) {
-        try {
-          const arr = JSON.parse(legacyRaw || "[]");
-          if (Array.isArray(arr) && arr.length > 0) {
-            const week1 = readWeekFavorites(1);
-            if (week1.size === 0) {
-              arr.forEach(id => week1.add(id));
-              writeWeekFavorites(1, week1);
-            }
-          }
-        } catch {}
-        localStorage.removeItem("favorites");
-      }
-    })();
+  { id:"talk-health", title:"Talk about Health",
+    items:[ { id:"item45", title:"Talk about Health", link:"#"} ] },
 
-    /* ---------- Date logic: Week 1 is Mon–Sun containing entry date ---------- */
-    const toInputValue = (date) => {
-      const y = date.getFullYear();
-      const m = String(date.getMonth()+1).padStart(2,'0');
-      const d = String(date.getDate()).padStart(2,'0');
-      return `${y}-${m}-${d}`;
-    };
-    const fromInputValue = (val) => {
-      const [y,m,d] = val.split("-").map(Number);
-      return new Date(y, (m-1), d);
-    };
+  { id:"transportation", title:"Transportation",
+    items:[ { id:"item46", title:"Transportation", link:"#"} ] },
 
-    function computeBaseMonday(entryDate){
-      const day = entryDate.getDay(); // 0=Sun,1=Mon,...6=Sat
-      const deltaToMonday = (day === 0 ? -6 : 1 - day);
-      const monday = new Date(entryDate);
-      monday.setHours(0,0,0,0);
-      monday.setDate(entryDate.getDate() + deltaToMonday);
-      return monday;
+  { id:"daily-life", title:"Daily Life Topic of Choice",
+    items:[ { id:"item47", title:"Daily Life Topic of Choice", link:"#"} ] }
+];
+
+/* =========================================================
+   STORAGE KEYS & HELPERS
+   ========================================================= */
+const WEEK_COUNT = 12;
+const getFavKeyPMG   = (w) => `plan_pmg_week_${w}`;
+const getFavKeySkill = (w) => `plan_skills_week_${w}`;
+const getWeekStateKey= (w) => `completion_week_${w}`;
+const EVAL_KEY       = (w) => `evaluation_week_${w}`;
+const COUNTS_KEY     = "completionCounts";
+
+const readSet = (key) => new Set(JSON.parse(localStorage.getItem(key) || "[]"));
+const writeSet = (key, s) => localStorage.setItem(key, JSON.stringify(Array.from(s)));
+const readObj = (key) => JSON.parse(localStorage.getItem(key) || "{}");
+const writeObj = (key, o) => localStorage.setItem(key, JSON.stringify(o));
+const readCounts = () => JSON.parse(localStorage.getItem(COUNTS_KEY) || "{}");
+const writeCounts = (o) => localStorage.setItem(COUNTS_KEY, JSON.stringify(o));
+const getCount = (id) => (readCounts()[id] || 0);
+function incCount(id){ const c=readCounts(); c[id]=(c[id]||0)+1; writeCounts(c); updateCompletionDisplays(id); }
+function decCount(id){ const c=readCounts(); c[id]=Math.max(0,(c[id]||0)-1); writeCounts(c); updateCompletionDisplays(id); }
+
+/* =========================================================
+   DATE / WEEK LOGIC
+   ========================================================= */
+const weekSelect = document.getElementById("week-select");
+let activeWeek = parseInt(localStorage.getItem("activeWeek") || "1",10);
+if (isNaN(activeWeek) || activeWeek < 1 || activeWeek > WEEK_COUNT) activeWeek = 1;
+
+for (let i=1;i<=WEEK_COUNT;i++){
+  const opt = document.createElement("option");
+  opt.value = String(i); opt.textContent = `Week ${i}`;
+  weekSelect.appendChild(opt);
+}
+weekSelect.value = String(activeWeek);
+weekSelect.addEventListener("change", () => setActiveWeek(parseInt(weekSelect.value,10)));
+
+const entryDateEl = document.getElementById("entry-date");
+(function initEntryDate(){
+  const saved = localStorage.getItem("infieldEntryDate");
+  const today = new Date();
+  entryDateEl.value = saved || toInput(today);
+  localStorage.setItem("infieldEntryDate", entryDateEl.value);
+  entryDateEl.addEventListener("change", ()=> {
+    if (entryDateEl.value) {
+      localStorage.setItem("infieldEntryDate", entryDateEl.value);
+      updatePlanHeader();
     }
+  });
+})();
 
-    function getWeekStartEnd(weekNumber){
-      const entryVal = localStorage.getItem("infieldEntryDate");
-      const entryDate = entryVal ? fromInputValue(entryVal) : new Date();
-      const baseMonday = computeBaseMonday(entryDate);
-      const start = new Date(baseMonday);
-      start.setDate(baseMonday.getDate() + 7*(weekNumber-1));
-      const end = new Date(start);
-      end.setDate(start.getDate() + 6);
-      return {start, end};
-    }
+function toInput(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),da=String(d.getDate()).padStart(2,"0"); return `${y}-${m}-${da}`; }
+function fromInput(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
+function computeBaseMonday(entryDate){
+  const day=entryDate.getDay(); const delta=(day===0? -6 : 1-day);
+  const monday=new Date(entryDate); monday.setHours(0,0,0,0); monday.setDate(entryDate.getDate()+delta);
+  return monday;
+}
+function weekStartEnd(weekNumber){
+  const entryVal = localStorage.getItem("infieldEntryDate");
+  const entryDate = entryVal ? fromInput(entryVal) : new Date();
+  const baseMonday = computeBaseMonday(entryDate);
+  const start = new Date(baseMonday); start.setDate(baseMonday.getDate()+7*(weekNumber-1));
+  const end = new Date(start); end.setDate(start.getDate()+6);
+  return { start, end };
+}
+const WD=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const MO=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fmtFull(d){ return `${WD[d.getDay()]} ${MO[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`; }
 
-    const WEEKDAY = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-    const MONTH = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    function fmtFull(d){
-      return `${WEEKDAY[d.getDay()]} ${MONTH[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
-    }
-    function updateWeekRangeDisplay(){
-      const {start, end} = getWeekStartEnd(activeWeek);
-      weekRangeEl.textContent = `Week ${activeWeek}: ${fmtFull(start)} – ${fmtFull(end)}`;
-    }
+/* =========================================================
+   NUMBERING
+   ========================================================= */
+function buildNumberingMaps(){
+  const sectionNum = new Map();
+  const itemNum = new Map();
+  LANGUAGE_SECTIONS.forEach((sec,si)=>{
+    const sNo = si+1; sectionNum.set(sec.id, sNo);
+    sec.items.forEach((it,ii)=> itemNum.set(it.id, { sec:sNo, idx: ii+1 }) );
+  });
+  return { sectionNum, itemNum };
+}
 
-    /* ---------- Active week ---------- */
-    let activeWeek = parseInt(localStorage.getItem("activeWeek") || "1", 10);
-    if (isNaN(activeWeek) || activeWeek < 1 || activeWeek > WEEK_COUNT) activeWeek = 1;
+/* =========================================================
+   RENDER: SOURCE LISTS (PMG & LANGUAGE)
+   ========================================================= */
+const pmgSource = document.getElementById("pmgSource");
+const languageSource = document.getElementById("languageSource");
 
-    function setActiveWeek(week) {
-      activeWeek = week;
-      localStorage.setItem("activeWeek", String(week));
-      tabs.forEach(t => t.classList.toggle("active", parseInt(t.dataset.week, 10) === week));
-      renderFavorites();
-      refreshFavoritedHints();
-      updateWeekRangeDisplay();
+function renderSources(){
+  /* PMG as a collapsed accordion under “Chapter 7 Topics” */
+  pmgSource.innerHTML = "";
+  const pmgSection = document.createElement("div");
+  pmgSection.className = "section collapsed";  // collapsed by default
+  pmgSection.dataset.sectionId = "pmg-ch7";
 
-      
-    // Disable Next Week button on Week 12 (no-wrap behavior)
-    function refreshNextWeekButton() {
-      const btn = document.getElementById("goto-next-week");
-      if (!btn) return;
-      btn.disabled = (activeWeek === WEEK_COUNT); // disabled only on Week 12
-    }
+  const pmgHeader = document.createElement("div");
+  pmgHeader.className = "section-header";
+  pmgHeader.innerHTML = `<span class="arrow">▶</span><span>Chapter 7 Topics</span>`;
+  pmgHeader.addEventListener("click", ()=> pmgSection.classList.toggle("collapsed"));
+  pmgSection.appendChild(pmgHeader);
 
-    // Update setActiveWeek to call the refresher
-    function setActiveWeek(week) {
-      activeWeek = week;
-      localStorage.setItem("activeWeek", String(week));
-      tabs.forEach(t => t.classList.toggle("active", parseInt(t.dataset.week, 10) === week));
-      renderFavorites();
-      refreshFavoritedHints();
-      updateWeekRangeDisplay();
-      refreshNextWeekButton();     // <-- add this line
-    }
+  const pmgList = document.createElement("ul");
+  pmgList.className = "section-items source-list";
+  PMG_TOPICS.forEach(t=>{
+    pmgList.appendChild(buildSourceLi({id:t.id,title:t.title,link:t.link}, "pmg"));
+  });
+  pmgSection.appendChild(pmgList);
+  pmgSource.appendChild(pmgSection);
 
-    // Also call once on load after your initial setActiveWeek(activeWeek);
+  /* Language sections as accordions (collapsed by default) */
+  languageSource.innerHTML="";
+  const { sectionNum } = buildNumberingMaps();
+  LANGUAGE_SECTIONS.forEach(sec=>{
+    const sWrap = document.createElement("div");
+    sWrap.className = "section collapsed";
+    sWrap.dataset.sectionId = sec.id;
 
-    }
+    const header = document.createElement("div");
+    header.className = "section-header";
+    header.innerHTML = `<span class="arrow">▶</span><span>${sectionNum.get(sec.id)}. ${sec.title}</span>`;
+    header.addEventListener("click", ()=> sWrap.classList.toggle("collapsed"));
+    sWrap.appendChild(header);
 
-    /* ---------- SOURCE LIST: wrap items into cards & add completion lines ---------- */
-    function wrapSourceItemsIntoCards(){
-      document.querySelectorAll(".skill-item").forEach(li => {
-        // Build card container
-        const card = document.createElement("div");
-        card.className = "item-card";
+    const items = document.createElement("ul");
+    items.className = "section-items source-list";
+    sec.items.forEach((it, index)=>{
+      const numberedTitle = `${sectionNum.get(sec.id)}.${index+1} ${it.title}`;
+      items.appendChild(buildSourceLi({id:it.id,title:numberedTitle,link:it.link}, "skill"));
+    });
+    sWrap.appendChild(items);
+    languageSource.appendChild(sWrap);
+  });
 
-        // Actions (existing + button)
-        const actions = document.createElement("div");
-        actions.className = "item-actions";
-        const plusBtn = li.querySelector(".add-btn");
-        actions.appendChild(plusBtn); // reuse existing button element
+  refreshAddButtons();
+}
 
-        // Title
-        const titleSpan = li.querySelector(".item-name");
-        titleSpan.classList.add("item-title");
-
-        // Completion line
-        let line = li.querySelector(".completion-line");
-        if (!line) {
-          line = document.createElement("div");
-          line.className = "completion-line";
-        }
-        const id = li.getAttribute("data-item-id");
-        const count = getCompletionCount(id);
-        if (count > 0) {
-          line.style.display = "";
-          line.textContent = `Completed ${count} ${count === 1 ? "time" : "times"}`;
-        } else {
-          line.style.display = "none";
-        }
-
-        // Assemble card
-        card.appendChild(actions);
-        card.appendChild(titleSpan);
-        card.appendChild(line);
-
-        // Replace li content
-        li.innerHTML = "";
-        li.appendChild(card);
-      });
-    }
-
-    /* ---------- Favorites list item (card) ---------- */
-
-
-function createFavoriteLi(itemId) {
-  const src = document.querySelector(`.skill-item[data-item-id="${itemId}"]`);
+function buildSourceLi(item, kind){
   const li = document.createElement("li");
-  li.setAttribute("data-fav-item-id", itemId);
+  li.dataset.itemId = item.id;
 
-  const card = document.createElement("div");
-  card.className = "item-card";
+  const card = document.createElement("div"); card.className="card";
+  const top = document.createElement("div"); top.className="card-row top";
 
-  // --- Left-side actions ---
-  const actions = document.createElement("div");
-  actions.className = "item-actions";
+  /* Source row: [+] then title (no link/move here) */
+  const actionsLeft = document.createElement("div"); actionsLeft.className="card-actions-left";
+  const btn = document.createElement("button"); btn.className="add-btn"; btn.textContent="+";
+  actionsLeft.appendChild(btn);
 
-  const checkBtn = document.createElement("button");
-  checkBtn.className = "check-btn";
-  checkBtn.textContent = "✓";
-  checkBtn.title = "Mark completed";
+  const title = document.createElement("div"); title.className="card-title";
+  const titleText = document.createElement("span"); titleText.className="card-title-text"; titleText.textContent=item.title;
+  title.appendChild(titleText);
 
-  const removeBtn = document.createElement("button");
-  removeBtn.className = "fav-remove";
-  removeBtn.textContent = "–";
-  removeBtn.title = "Remove from this week's language study plan";
+  top.appendChild(actionsLeft);
+  top.appendChild(title);
+  card.appendChild(top);
 
-  actions.appendChild(checkBtn);
-  actions.appendChild(removeBtn);
+  btn.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    if (btn.disabled) return;
+    if (kind==="pmg") addPMGToPlan(item);
+    else addSkillToPlan(item);
+  });
 
-  // --- Title ---
-  const titleSpan = document.createElement("span");
-  titleSpan.className = "item-title";
-  titleSpan.textContent = src
-    ? (src.querySelector(".item-title")?.textContent || src.querySelector(".item-name")?.textContent)
-    : itemId;
-
-  // --- NEW: Right-side Move/Repeat button ---
-  const moveNextBtn = document.createElement("button");
-  moveNextBtn.className = "move-next";
-  // icon & tooltip set after we know check state
-
-  // Completion line
-  const line = document.createElement("div");
-  line.className = "completion-line";
-  const initialCount = getCompletionCount(itemId);
-  if (initialCount > 0) {
-    line.textContent = `Completed ${initialCount} ${initialCount === 1 ? "time" : "times"}`;
-  } else {
-    line.style.display = "none";
-  }
-
-  // Assemble: [actions] [title] [moveNextBtn] [line]
-  card.appendChild(actions);
-  card.appendChild(titleSpan);
-  card.appendChild(moveNextBtn);
-  card.appendChild(line);
   li.appendChild(card);
-
-  // --- State helpers ---
-  const WEEK_MAX = WEEK_COUNT; // already defined globally
-  const nextWeek = (activeWeek === WEEK_MAX) ? WEEK_MAX + 1 : activeWeek + 1; // no wrap by default; see note below
-
-  // Current check state (per-week)
-  const weekState = readWeekCompletionState(activeWeek);
-  let isChecked = !!weekState[itemId];
-
-  // Helper: is item already in next week's favorites?
-  function isInNextWeek() {
-    if (nextWeek > WEEK_MAX) return false; // if you keep "no next week" rule
-    const nextSet = readWeekFavorites(nextWeek);
-    return nextSet.has(itemId);
-  }
-
-  // Helper: refresh icon, tooltip, and disabled state
-  function refreshMoveButtonUI() {
-    // Icon based on checked state
-    moveNextBtn.textContent = isChecked ? "⟳" : "→"; // repeat when checked, arrow when not
-    moveNextBtn.title = isChecked ? "Repeat next week." : "Move to next week.";
-
-    // Disabled if already in next week's list
-    const alreadyThere = isInNextWeek();
-    moveNextBtn.disabled = !!alreadyThere;
-    if (alreadyThere) {
-      moveNextBtn.title = "Already in next week.";
-    }
-  }
-
-  // Initial UI for the button
-  refreshMoveButtonUI();
-
-  // --- Check toggle: increment on ON, decrement on OFF ---
-  checkBtn.addEventListener("click", () => {
-    const state = readWeekCompletionState(activeWeek);
-    const currentlyChecked = !!state[itemId];
-    const nowChecked = !currentlyChecked;
-    state[itemId] = nowChecked;
-    writeWeekCompletionState(activeWeek, state);
-
-    isChecked = nowChecked;                 // local flag
-    refreshMoveButtonUI();                  // update icon & tooltip
-
-    if (nowChecked) {
-      checkBtn.classList.add("checked");
-      li.classList.add("completed");
-      incrementCompletionCount(itemId);
-    } else {
-      checkBtn.classList.remove("checked");
-      li.classList.remove("completed");
-      decrementCompletionCount(itemId);
-    }
-  });
-
-  // --- Remove handler (unchanged) ---
-  removeBtn.addEventListener("click", () => {
-    const set = readWeekFavorites(activeWeek);
-    set.delete(itemId);
-    writeWeekFavorites(activeWeek, set);
-    renderFavorites();
-    refreshFavoritedHints();
-  });
-
-  // --- NEW: Move/Repeat to NEXT week logic ---
-  moveNextBtn.addEventListener("click", () => {
-    // If you're keeping the "no next week after Week 12" rule:
-    if (nextWeek > WEEK_MAX) {
-      alert("This is Week 12; there is no next week to move to.");
-      return;
-    }
-
-    const nextSet = readWeekFavorites(nextWeek);
-    if (!nextSet.has(itemId)) {
-      nextSet.add(itemId);
-      writeWeekFavorites(nextWeek, nextSet);
-    }
-
-    // If NOT checked → remove from current week
-    if (!isChecked) {
-      const currSet = readWeekFavorites(activeWeek);
-      if (currSet.has(itemId)) {
-        currSet.delete(itemId);
-        writeWeekFavorites(activeWeek, currSet);
-      }
-    }
-
-    // Ensure next week's completion starts OFF explicitly
-    const nextWeekState = readWeekCompletionState(nextWeek);
-    if (nextWeekState[itemId] !== true) {
-      nextWeekState[itemId] = false;
-      writeWeekCompletionState(nextWeek, nextWeekState);
-    }
-
-    // Refresh UI (current list & hints)
-    renderFavorites();
-    refreshFavoritedHints();
-
-    // After re-render, our old DOM node is gone; nothing more to do here.
-    // (The new instance will compute disabled state correctly via refreshMoveButtonUI)
-  });
-
-  // Apply initial visual state
-  if (isChecked) {
-    checkBtn.classList.add("checked");
-    li.classList.add("completed");
-  }
-
   return li;
 }
 
-    /* ---------- Render favorites for the active week ---------- */
-    function renderFavorites() {
-      favoritesListEl.innerHTML = "";
-      const set = readWeekFavorites(activeWeek);
-      if (set.size === 0) {
-        const empty = document.createElement("div");
-        empty.className = "favorites-empty";
-        empty.textContent = "No items yet. Click + to add to this week’s language study plan.";
-        favoritesListEl.appendChild(empty);
-        return;
-      }
-      Array.from(set).forEach(id => {
-        favoritesListEl.appendChild(createFavoriteLi(id));
-      });
+/* =========================================================
+   PLAN RENDER & ACTIONS (open-circle check + reordered)
+   ========================================================= */
+const planPMG = document.getElementById("planPMG");
+const planSkills = document.getElementById("planSkills");
+const planEval = document.getElementById("planEval");
+const stickyMini = document.getElementById("stickyMini");
+
+function setActiveWeek(w){
+  activeWeek = w;
+  localStorage.setItem("activeWeek", String(w));
+  weekSelect.value = String(w);
+  renderPlan();
+  refreshAddButtons();
+}
+
+function updatePlanHeader(){
+  const { start, end } = weekStartEnd(activeWeek);
+  document.getElementById("planTitle").textContent = `Week ${activeWeek} Study Plan`;
+  document.getElementById("planDates").textContent = `${fmtFull(start)} – ${fmtFull(end)}`;
+  stickyMini.textContent = `→ Week ${activeWeek} Study Plan`;
+}
+
+function renderPlan(){
+  updatePlanHeader();
+
+  // PMG (single)
+  planPMG.innerHTML="";
+  const pmgSet = readSet(getFavKeyPMG(activeWeek));
+  const chosenId = pmgSet.values().next().value;
+  if (chosenId){
+    const topic = PMG_TOPICS.find(t=>t.id===chosenId);
+    if (topic){
+      planPMG.appendChild(buildPlanLi(topic, "pmg", null)); // no number for PMG
     }
+  }
 
-    /* ---------- Add item to current week (no duplicates) ---------- */
-    function addToCurrentWeek(itemId) {
-      const set = readWeekFavorites(activeWeek);
-      if (!set.has(itemId)) {
-        set.add(itemId);
-        writeWeekFavorites(activeWeek, set);
-        renderFavorites();
-        refreshFavoritedHints();
-      }
+  // Skills (unlimited)
+  planSkills.innerHTML="";
+  const skillSet = readSet(getFavKeySkill(activeWeek));
+  const { itemNum } = buildNumberingMaps();
+  Array.from(skillSet).forEach(id=>{
+    const item = findItemById(id);
+    if (item){
+      const numObj = itemNum.get(item.id); // {sec, idx}
+      const displayNum = numObj ? `${numObj.sec}.${numObj.idx}` : null;
+      planSkills.appendChild(buildPlanLi(item, "skill", displayNum));
     }
-
-    /* ---------- Visual hint in source list for favorited items ---------- */
-    function refreshFavoritedHints() {
-      const set = readWeekFavorites(activeWeek);
-      document.querySelectorAll(".skill-item").forEach(li => {
-        const id = li.getAttribute("data-item-id");
-        li.classList.toggle("favorited", set.has(id));
-      });
-    }
-
-    /* ---------- Completion lines updater ---------- */
-    function updateCompletionLinesForItem(itemId){
-      // Update source item line
-      const src = document.querySelector(`.skill-item[data-item-id="${itemId}"] .completion-line`);
-      const count = getCompletionCount(itemId);
-      if (src) {
-        if (count > 0) {
-          src.style.display = "";
-          src.textContent = `Completed ${count} ${count === 1 ? "time" : "times"}`;
-        } else {
-          src.style.display = "none";
-          src.textContent = "";
-        }
-      }
-      // Update all favorites clones currently rendered
-      const favLines = favoritesListEl.querySelectorAll(`li[data-fav-item-id="${itemId}"] .completion-line`);
-      favLines.forEach(line => {
-        if (count > 0) {
-          line.style.display = "";
-          line.textContent = `Completed ${count} ${count === 1 ? "time" : "times"}`;
-        } else {
-          line.style.display = "none";
-          line.textContent = "";
-        }
-      });
-    }
-
-    /* ---------- Tabs ---------- */
-    tabs.forEach(tab => {
-      tab.addEventListener("click", () => setActiveWeek(parseInt(tab.dataset.week, 10)));
-    });
-
-    /* ---------- Entry date init & change ---------- */
-    (function initEntryDate(){
-      const saved = localStorage.getItem("infieldEntryDate");
-      const today = new Date();
-      entryDateEl.value = saved || toInputValue(today); // default to today if none
-      localStorage.setItem("infieldEntryDate", entryDateEl.value);
-      entryDateEl.addEventListener("change", () => {
-        if (entryDateEl.value) {
-          localStorage.setItem("infieldEntryDate", entryDateEl.value);
-          updateWeekRangeDisplay();
-        }
-      });
-    })();
-
-    /* ---------- Transform source items into cards FIRST ---------- */
-    wrapSourceItemsIntoCards();
-
-    /* ---------- Attach + handlers AFTER wrapping ---------- */
-    document.querySelectorAll(".skill-item").forEach(li => {
-      const button = li.querySelector(".add-btn");
-      button.addEventListener("click", (event) => {
-        event.stopPropagation(); // don't toggle section when clicking button
-        const id = li.getAttribute("data-item-id");
-        addToCurrentWeek(id);
-      });
-    });
-
-    /* ---------- Initial favorites render & hints & range ---------- */
-    setActiveWeek(activeWeek);
-
-    /* ---------- Section collapsed/open state ---------- */
-    let sectionStates = {};
-    const sectionStatesRaw = localStorage.getItem("sectionStates");
-    if (sectionStatesRaw) {
-      try {
-        sectionStates = JSON.parse(sectionStatesRaw) || {};
-      } catch {
-        sectionStates = {};
-      }
-    } else {
-      // First visit: default all sections to collapsed
-      sections.forEach(sec => {
-        const id = sec.getAttribute("data-section-id");
-        sectionStates[id] = "collapsed";
-      });
-      localStorage.setItem("sectionStates", JSON.stringify(sectionStates));
-    }
-
-    function saveSectionStates() {
-      localStorage.setItem("sectionStates", JSON.stringify(sectionStates));
-    }
-
-    sections.forEach(section => {
-      const sectionId = section.getAttribute("data-section-id");
-      const header = section.querySelector(".section-header");
-      // Apply state
-      const state = sectionStates[sectionId] || "collapsed";
-      if (state === "collapsed") {
-        section.classList.add("collapsed");
-      } else {
-        section.classList.remove("collapsed");
-      }
-      header.addEventListener("click", () => {
-        const currentlyCollapsed = section.classList.contains("collapsed");
-        if (currentlyCollapsed) {
-          section.classList.remove("collapsed");
-          sectionStates[sectionId] = "open";
-        } else {
-          section.classList.add("collapsed");
-          sectionStates[sectionId] = "collapsed";
-        }
-        saveSectionStates();
-      });
-    });
-
-    /* ---------- Expand All / Collapse All ---------- */
-    document.getElementById("expand-all").addEventListener("click", () => {
-      sections.forEach(section => {
-        section.classList.remove("collapsed");
-        const id = section.getAttribute("data-section-id");
-        sectionStates[id] = "open";
-      });
-      saveSectionStates();
-    });
-    document.getElementById("collapse-all").addEventListener("click", () => {
-      sections.forEach(section => {
-        section.classList.add("collapsed");
-        const id = section.getAttribute("data-section-id");
-        sectionStates[id] = "collapsed";
-      });
-      saveSectionStates();
-    });
-
-    /* ---------- Clear Week (with confirmation & decrements) ---------- */
-    document.getElementById("clear-week").addEventListener("click", () => {
-      const { start, end } = getWeekStartEnd(activeWeek);
-      const msg = `Clear Week ${activeWeek}?\n\nThis will:\n• Remove all items from Week ${activeWeek}'s plan\n• Uncheck any completed items for this week\n• Decrease the global completion count by 1 for each item checked in this week\n\nDate range: ${fmtFull(start)} – ${fmtFull(end)}\n\nThis cannot be undone. Continue?`;
-
-      if (!window.confirm(msg)) return;
-
-      // Determine which items were checked ON in this week
-      const weekState = readWeekCompletionState(activeWeek);
-      const itemsCheckedThisWeek = Object.entries(weekState)
-        .filter(([, isOn]) => !!isOn)
-        .map(([itemId]) => itemId);
-
-      // Decrement global counts once per checked item
-      itemsCheckedThisWeek.forEach(itemId => decrementCompletionCount(itemId));
-
-      // Clear week completion state & favorites
-      writeWeekCompletionState(activeWeek, {});
-      writeWeekFavorites(activeWeek, new Set()); // empty set
-
-      // Rerender favorites + hints
-      renderFavorites();
-      refreshFavoritedHints();
-
-      // Refresh completion lines under touched source items
-      itemsCheckedThisWeek.forEach(updateCompletionLinesForItem);
-    });
-
-    /* ---------- Clear All (with confirmation & full reset) ---------- */
-    document.getElementById("clear-all").addEventListener("click", () => {
-      const msg = `Clear ALL weeks (Weeks 1–12)?\n\nThis will:\n• Remove all items from every week's plan\n• Uncheck all completed items in every week\n• Reset ALL global completion counts to 0\n\nThis cannot be undone. Continue?`;
-
-      if (!window.confirm(msg)) return;
-
-      // Clear favorites & week completion states across all weeks
-      for (let w = 1; w <= WEEK_COUNT; w++) {
-        writeWeekFavorites(w, new Set()); // empty favorites
-        writeWeekCompletionState(w, {});  // empty check states
-      }
-
-      // Reset global completion counts
-      localStorage.removeItem("completionCounts");
-
-      // Refresh UI
-      renderFavorites();
-      refreshFavoritedHints();
-
-      // Refresh completion lines under ALL source items
-      document.querySelectorAll(".skill-item").forEach(li => {
-        const id = li.getAttribute("data-item-id");
-        updateCompletionLinesForItem(id);
-      });
-    });
-
-  // "Next Week" navigation
-  document.getElementById("goto-next-week").addEventListener("click", () => {
-    // Choose one behavior:
-
-    // A) Stop at Week 12 (no wrap):
-    // const next = activeWeek + 1;
-    // if (next > WEEK_COUNT) {
-    //   alert("You are on Week 12. There is no next week.");
-    //   return;
-    // }
-
-    // B) Wrap from Week 12 → Week 1 (recommended for continuous planning):
-    const next = (activeWeek === WEEK_COUNT) ? 1 : activeWeek + 1;
-
-    setActiveWeek(next);
-    // Optional: scroll the page back to the favorites card so users see the new date range
-    // document.querySelector('.favorites-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
+  // Evaluation (always present)
+  planEval.innerHTML="";
+  planEval.appendChild(buildEvalLi());
 
-function refreshNextWeekButton() {
-  const btn = document.getElementById("goto-next-week");
-  btn.disabled = (activeWeek === WEEK_COUNT);
+  refreshAddButtons();
 }
 
-// Call it whenever the week changes:
-function setActiveWeek(week) {
-  activeWeek = week;
-  localStorage.setItem("activeWeek", String(week));
-  tabs.forEach(t => t.classList.toggle("active", parseInt(t.dataset.week, 10) === week));
-  renderFavorites();
-  refreshFavoritedHints();
-  updateWeekRangeDisplay();
-  refreshNextWeekButton(); // <-- add this
+function findItemById(id){
+  for (const sec of LANGUAGE_SECTIONS){
+    const found = sec.items.find(i=>i.id===id);
+    if (found) return found;
+  }
+  return null;
 }
 
-// Also call once on load after setActiveWeek(activeWeek);
+function buildPlanLi(item, kind, displayNum){
+  const li = document.createElement("li");
+  li.dataset.planId = item.id;
+
+  const card = document.createElement("div"); card.className="card in-plan";
+
+  /* ---- TOP ROW: remove (left) + circle-check + [num + title] + right actions (link + move) ---- */
+  const top = document.createElement("div"); top.className="card-row top";
+
+  const actionsLeft = document.createElement("div"); actionsLeft.className="card-actions-left";
+  const remove = document.createElement("button"); remove.className="remove-btn"; remove.title="Remove"; remove.textContent="–";
+  actionsLeft.appendChild(remove);
+
+  // Circle check (open/filled) — separate sibling so it can top-align independently
+  const circle = document.createElement("button");
+  circle.className = "circle-check";
+  circle.setAttribute("role","checkbox");
+  circle.setAttribute("aria-checked","false");
+  circle.setAttribute("title","Mark completed");
+  circle.innerHTML = '<span class="mark">✓</span>';
+
+  // Title group: number + text
+  const title = document.createElement("div"); title.className="card-title";
+  const numSpan = document.createElement("span"); numSpan.className="card-num";
+  if (displayNum) numSpan.textContent = displayNum; else numSpan.style.display = "none";
+  const titleText = document.createElement("span"); titleText.className="card-title-text"; titleText.textContent = item.title;
+  title.appendChild(numSpan); title.appendChild(titleText);
+
+  // Right actions: link + move
+  const right = document.createElement("div"); right.className="right-actions";
+  const linkA = document.createElement("a");
+  linkA.className="ext-link"; linkA.textContent="↗"; linkA.href=item.link||"#"; linkA.target="_blank"; linkA.rel="noopener noreferrer";
+  linkA.dataset.linkId=item.id;
+  const moveNext = document.createElement("button"); moveNext.className="move-next"; moveNext.title="Move or repeat to next week";
+
+  right.appendChild(linkA); right.appendChild(moveNext);
+
+  top.appendChild(actionsLeft);
+  top.appendChild(circle);
+  top.appendChild(title);
+  top.appendChild(right);
+  card.appendChild(top);
+
+  /* ---- COMPLETION LINE ---- */
+  const line = document.createElement("div"); line.className="completion-line"; line.dataset.compId = item.id;
+  card.appendChild(line);
+
+  // load per-week check state
+  const wkState = readObj(getWeekStateKey(activeWeek));
+  let isChecked = !!wkState[item.id];
+  applyCheckUI(isChecked, circle, card, line, item.id);
+
+  // Toggle handlers for circle (click/keyboard)
+  circle.addEventListener("click", ()=>toggleCheck(item.id));
+  circle.addEventListener("keydown", (e)=>{
+    if (e.key === " " || e.key === "Enter"){ e.preventDefault(); toggleCheck(item.id); }
+  });
+
+  function toggleCheck(id){
+    const state = readObj(getWeekStateKey(activeWeek));
+    const now = !state[id];
+    state[id] = now; writeObj(getWeekStateKey(activeWeek), state);
+
+    if (now) incCount(id); else decCount(id);
+
+    isChecked = now;
+    applyCheckUI(isChecked, circle, card, line, id);
+    refreshMoveNextButton(moveNext, item, kind, isChecked);
+  }
+
+  remove.addEventListener("click", ()=>{
+    if (kind==="pmg"){
+      const set = readSet(getFavKeyPMG(activeWeek));
+      set.clear(); writeSet(getFavKeyPMG(activeWeek), set);
+    } else {
+      const set = readSet(getFavKeySkill(activeWeek));
+      set.delete(item.id); writeSet(getFavKeySkill(activeWeek), set);
+    }
+    renderPlan();
+  });
+
+  refreshMoveNextButton(moveNext, item, kind, isChecked);
+  moveNext.addEventListener("click", ()=> handleMoveNext(item, kind, isChecked));
+
+  li.appendChild(card);
+  return li;
+}
+
+function applyCheckUI(isChecked, circleBtn, card, lineEl, itemId){
+  circleBtn.setAttribute("aria-checked", isChecked ? "true" : "false");
+  card.classList.toggle("completed", isChecked);
+  const count = getCount(itemId);
+  lineEl.textContent = count>0 ? `Completed ${count} ${count===1 ? "time" : "times"}` : "";
+}
+
+function refreshMoveNextButton(btn, item, kind, isChecked){
+  const nextWeek = activeWeek + 1;
+  if (nextWeek > WEEK_COUNT){
+    btn.disabled = true; btn.classList.toggle("is-repeat", isChecked);
+    btn.textContent = isChecked ? "⟳" : "→";
+    btn.title = "You are on Week 12. There is no next week.";
+    return;
+  }
+  let alreadyThere=false;
+  if (kind==="pmg"){
+    const nset = readSet(getFavKeyPMG(nextWeek));
+    const chosen = nset.values().next().value;
+    alreadyThere = (chosen === item.id);
+  }else{
+    const nset = readSet(getFavKeySkill(nextWeek));
+    alreadyThere = nset.has(item.id);
+  }
+  btn.textContent = isChecked ? "⟳" : "→";
+  btn.classList.toggle("is-repeat", isChecked);
+  btn.disabled = alreadyThere;
+  btn.title = alreadyThere ? "Already in next week's plan." : (isChecked ? "Repeat in next week" : "Move to next week");
+}
+
+function handleMoveNext(item, kind, isChecked){
+  const nextWeek = activeWeek + 1;
+  if (nextWeek > WEEK_COUNT){ alert("This is Week 12; there is no next week to move to."); return; }
+
+  if (kind==="pmg"){
+    const nset = readSet(getFavKeyPMG(nextWeek));
+    const currentNext = nset.values().next().value || null;
+    if (currentNext && currentNext !== item.id){
+      const ok = confirm(`Next week already has a PMG topic. Replace it with "${item.title}"?`);
+      if (!ok) return;
+      nset.clear();
+    }
+    nset.add(item.id); writeSet(getFavKeyPMG(nextWeek), nset);
+
+    if (!isChecked){
+      const cset = readSet(getFavKeyPMG(activeWeek)); cset.clear(); writeSet(getFavKeyPMG(activeWeek), cset);
+      const state = readObj(getWeekStateKey(activeWeek)); Object.keys(state).forEach(k=>{ if(k===item.id) state[k]=false; }); writeObj(getWeekStateKey(activeWeek), state);
+    }
+    const nstate = readObj(getWeekStateKey(nextWeek)); nstate[item.id] = false; writeObj(getWeekStateKey(nextWeek), nstate);
+
+  } else {
+    const nset = readSet(getFavKeySkill(nextWeek));
+    if (!nset.has(item.id)) nset.add(item.id); writeSet(getFavKeySkill(nextWeek), nset);
+
+    if (!isChecked){
+      const cset = readSet(getFavKeySkill(activeWeek)); cset.delete(item.id); writeSet(getFavKeySkill(activeWeek), cset);
+      const state = readObj(getWeekStateKey(activeWeek)); state[item.id] = false; writeObj(getWeekStateKey(activeWeek), state);
+    }
+    const nstate = readObj(getWeekStateKey(nextWeek)); nstate[item.id] = false; writeObj(getWeekStateKey(nextWeek), nstate);
+  }
+
+  renderPlan();
+}
+
+/* ===== Evaluation special card (open-circle; no counts) ===== */
+function buildEvalLi(){
+  const li = document.createElement("li");
+  const card = document.createElement("div"); card.className="card in-plan";
+
+  const top = document.createElement("div"); top.className="card-row top";
+
+  const actionsLeft = document.createElement("div"); actionsLeft.className="card-actions-left";
+  const remove = document.createElement("button"); remove.className="remove-btn"; remove.title="Remove"; remove.textContent="–";
+  actionsLeft.appendChild(remove);
+
+  // circle check
+  const circle = document.createElement("button");
+  circle.className = "circle-check";
+  circle.setAttribute("role","checkbox");
+  circle.setAttribute("aria-checked","false");
+  circle.setAttribute("title","Mark completed");
+  circle.innerHTML = '<span class="mark">✓</span>';
+
+  const title = document.createElement("div"); title.className="card-title";
+  const numSpan = document.createElement("span"); numSpan.className="card-num"; numSpan.style.display="none";
+  const titleText = document.createElement("span"); titleText.className="card-title-text"; titleText.textContent="Complete a Language Study Evaluation";
+  title.appendChild(numSpan); title.appendChild(titleText);
+
+  const right = document.createElement("div"); right.className="right-actions";
+  const a = document.createElement("a"); a.className="ext-link"; a.textContent="↗"; a.href="https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=figure2_title1-figure2_p8#figure2_title1"; a.target="_blank"; a.rel="noopener noreferrer"; a.dataset.linkId="evaluation";
+  const moveNext = document.createElement("button"); moveNext.className="move-next"; moveNext.title="Move or repeat to next week";
+  right.appendChild(a);
+
+  top.appendChild(actionsLeft); top.appendChild(circle); top.appendChild(title); top.appendChild(right);
+  card.appendChild(top);
+
+  const line = document.createElement("div"); line.className="completion-line"; card.appendChild(line);
+
+  // evaluation cannot be removed
+  remove.disabled = true; remove.title = "This item cannot be removed";
+
+  let isOn = localStorage.getItem(EVAL_KEY(activeWeek)) === "true";
+  applyCheckUI(isOn, circle, card, line, "evaluation"); // counts ignored for evaluation
+
+  circle.addEventListener("click", ()=>{
+    isOn = !isOn; localStorage.setItem(EVAL_KEY(activeWeek), String(isOn));
+    applyCheckUI(isOn, circle, card, line, "evaluation");
+  });
+  circle.addEventListener("keydown",(e)=>{ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); circle.click(); }});
 
 
-  </script>
+  li.appendChild(card);
+  return li;
+}
+
+/* =========================================================
+   ADD / DISABLE LOGIC FOR SOURCE BUTTONS
+   ========================================================= */
+function refreshAddButtons(){
+  const pmgSet = readSet(getFavKeyPMG(activeWeek));
+  const chosen = pmgSet.values().next().value || null;
+  document.querySelectorAll('#pmgSource li[data-item-id]').forEach(li=>{
+    const id = li.dataset.itemId;
+    const btn = li.querySelector('.add-btn');
+    btn.disabled = (id === chosen);  // only the chosen PMG disabled
+  });
+
+  const skillSet = readSet(getFavKeySkill(activeWeek));
+  document.querySelectorAll('#languageSource li[data-item-id]').forEach(li=>{
+    const id = li.dataset.itemId;
+    const btn = li.querySelector('.add-btn');
+    btn.disabled = skillSet.has(id);
+  });
+}
+
+/* =========================================================
+   ADD TO PLAN (from source)
+   ========================================================= */
+function addPMGToPlan(topic){
+  const set = readSet(getFavKeyPMG(activeWeek));
+  if (set.size===0){ set.add(topic.id); writeSet(getFavKeyPMG(activeWeek), set); renderPlan(); return; }
+  const ok = window.confirm(`You can only have one study focus in this section. Would you like to change it to "${topic.title}"?`);
+  if (ok){
+    set.clear(); set.add(topic.id); writeSet(getFavKeyPMG(activeWeek), set);
+    const state = readObj(getWeekStateKey(activeWeek));
+    Object.keys(state).forEach(k=>{ if (k.startsWith("pmg")) state[k]=false; });
+    writeObj(getWeekStateKey(activeWeek), state);
+    renderPlan();
+  }
+}
+
+function addSkillToPlan(item){
+  const set = readSet(getFavKeySkill(activeWeek));
+  if (!set.has(item.id)){ set.add(item.id); writeSet(getFavKeySkill(activeWeek), set); renderPlan(); }
+}
+
+/* =========================================================
+   COPY PLAN → MARKDOWN (with dates & numbering)
+   ========================================================= */
+document.getElementById("copyPlan").addEventListener("click", ()=>{
+  const { start, end } = weekStartEnd(activeWeek);
+  const planTitle = `## Week ${activeWeek} Study Plan`;
+  const datesLine = `_${fmtFull(start)} – ${fmtFull(end)}_`;
+
+  const pmgSet = readSet(getFavKeyPMG(activeWeek));
+  const pmgId = pmgSet.values().next().value;
+  const pmgTopic = PMG_TOPICS.find(t=>t.id===pmgId);
+
+  const { itemNum } = buildNumberingMaps();
+  const skillSet = readSet(getFavKeySkill(activeWeek));
+  const skillsLines = Array.from(skillSet).map(id=>{
+    const item = findItemById(id) || { title:id };
+    const num = itemNum.get(id);
+    const t = num ? `${num.sec}.${num.idx} ${item.title}` : item.title;
+    return `- ${t}`;
+  });
+
+  const lines = [
+    planTitle, datesLine, "",
+    "### Preach My Gospel study section", ...(pmgTopic ? [`- ${pmgTopic.title}`] : []),
+    "", "### Language Skills", ...(skillsLines.length ? skillsLines : []),
+    "", "### Evaluate Your Language Study", "- Complete a Language Study Evaluation"
+  ];
+
+  const text = lines.join("\n");
+  navigator.clipboard?.writeText(text).then(()=> alert("Plan copied to clipboard.") )
+  .catch(()=>{
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); alert("Plan copied to clipboard."); }
+    catch { alert("Copy failed. You can select and copy manually:\n\n"+text); }
+    finally { document.body.removeChild(ta); }
+  });
+});
+
+/* =========================================================
+   CLEAR ACTIONS & NEXT WEEK
+   ========================================================= */
+document.getElementById("clearWeek").addEventListener("click", ()=>{
+  const { start, end } = weekStartEnd(activeWeek);
+  const msg = `Clear Week ${activeWeek}?\n\nThis will:\n• Remove all items from this week's plan\n• Uncheck any completed items for this week (including Evaluation)\n• Decrease the global completion count by 1 for each item checked this week\n\nDate range: ${fmtFull(start)} – ${fmtFull(end)}\n\nThis cannot be undone. Continue?`;
+  if (!confirm(msg)) return;
+
+  const state = readObj(getWeekStateKey(activeWeek));
+  Object.entries(state).forEach(([itemId, isOn])=>{
+    if (isOn && itemId !== "evaluation") decCount(itemId);
+  });
+
+  writeSet(getFavKeyPMG(activeWeek), new Set());
+  writeSet(getFavKeySkill(activeWeek), new Set());
+  localStorage.removeItem(EVAL_KEY(activeWeek));
+  localStorage.removeItem(getWeekStateKey(activeWeek));
+
+  renderPlan();
+});
+
+document.getElementById("clearAll").addEventListener("click", ()=>{
+  const msg = `Clear ALL weeks (Weeks 1–${WEEK_COUNT})?\n\nThis will:\n• Remove all items from every week's plan\n• Uncheck all completed items in every week\n• Reset all global completion counts to 0\n\nThis cannot be undone. Continue?`;
+  if (!confirm(msg)) return;
+  for (let w=1; w<=WEEK_COUNT; w++){
+    writeSet(getFavKeyPMG(w), new Set());
+    writeSet(getFavKeySkill(w), new Set());
+    localStorage.removeItem(EVAL_KEY(w));
+    localStorage.removeItem(getWeekStateKey(w));
+  }
+  localStorage.removeItem(COUNTS_KEY);
+  renderPlan();
+});
+
+document.getElementById("nextWeek").addEventListener("click", ()=>{
+  const next = activeWeek+1;
+  if (next>WEEK_COUNT){ alert("You are on Week 12. There is no next week."); return; }
+  setActiveWeek(next);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+/* =========================================================
+   STICKY MINI HEADER SCROLL
+   ========================================================= */
+const planWrapper = document.getElementById("planWrapper");
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    stickyMini.classList.toggle("show", !e.isIntersecting);
+  });
+}, { rootMargin: "-70px 0px 0px 0px", threshold: 0 });
+io.observe(planWrapper);
+
+stickyMini.addEventListener("click", ()=>{
+  planWrapper.scrollIntoView({behavior:"smooth",block:"start"});
+});
+
+/* =========================================================
+   COMPLETION LINE REFRESH
+   ========================================================= */
+function updateCompletionDisplays(itemId){
+  const count = getCount(itemId);
+  document.querySelectorAll(`.completion-line[data-comp-id="${itemId}"]`).forEach(el=>{
+    el.textContent = count>0 ? `Completed ${count} ${count===1?"time":"times"}` : "";
+  });
+}
+
+/* =========================================================
+   INFO POPOVER (Option C)
+   ========================================================= */
+const noticeBtn = document.getElementById("noticeBtn");
+const noticePop = document.getElementById("noticePop");
+document.addEventListener("click", (e)=>{
+  if (noticeBtn.contains(e.target)){
+    const open = noticePop.classList.toggle("show");
+    noticeBtn.setAttribute("aria-expanded", open?"true":"false");
+    if (open){ // position under the button
+      const rect = noticeBtn.getBoundingClientRect();
+      const top = window.scrollY + rect.bottom + 8;
+      const left = Math.max(8, Math.min(window.scrollX + rect.left - 260, window.scrollX + window.innerWidth - 320));
+      noticePop.style.position = "absolute";
+      noticePop.style.top = `${top}px`;
+      noticePop.style.left = `${left}px`;
+    }
+    return;
+  }
+  // click outside closes
+  if (!noticePop.contains(e.target)){
+    noticePop.classList.remove("show");
+    noticeBtn.setAttribute("aria-expanded","false");
+  }
+});
+
+/* =========================================================
+   INIT
+   ========================================================= */
+function setActiveWeek(w){ activeWeek=w; localStorage.setItem("activeWeek",String(w)); weekSelect.value=String(w); renderPlan(); refreshAddButtons(); }
+
+function init(){ renderSources(); renderPlan(); }
+init();
+</script>
 </body>
 </html>
