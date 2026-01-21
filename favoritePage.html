@@ -223,7 +223,7 @@ footer{margin-top:20px;text-align:center;color:#555;font-size:.82rem}
 .app-modal__close {
   border:none; background:transparent; font-size:1.2rem; cursor:pointer; line-height:1;
 }
-.app-modal__body { padding:14px 12px; font-size:.97rem; color:#111; }
+.app-modal__body { padding:14px 12px; font-size:.97rem; color:#111; white-space: pre-line;}
 .app-modal__footer {
   display:flex; gap:8px; justify-content:flex-end; padding:10px 12px; border-top:1px solid var(--border);
 }
@@ -1009,7 +1009,15 @@ document.getElementById("copyPlan").addEventListener("click", () => {
    ========================================================= */
 document.getElementById("clearWeek").addEventListener("click", async ()=>{
   const { start, end } = weekStartEnd(activeWeek);
-  const msg = `Clear Week ${activeWeek}?\n\nThis will:\n• Remove all items from this week's plan\n• Uncheck any completed items for this week (including Evaluation)\n• Decrease the global completion count by 1 for each item checked this week\n\nDate range: ${fmtFull(start)} – ${fmtFull(end)}\n\nThis cannot be undone. Continue?`;
+
+const msg =
+  `Clear Week ${activeWeek}?\n\n` +
+  `This will:\n` +
+  `• Remove all items from this week’s plan\n` +
+  `• Uncheck anything you marked “completed” this week (including Evaluation)\n` +
+  `• Reduce the “Completed X times” total for items you checked this week by 1\n\n` +
+  `Week dates: ${fmtFull(start)} – ${fmtFull(end)}\n\n` +
+  `This cannot be undone. Continue?`;
   const ok = await appConfirm(msg, "Clear Week");
   if (!ok) return;
 
@@ -1030,7 +1038,15 @@ document.getElementById("clearWeek").addEventListener("click", async ()=>{
 });
 
 document.getElementById("clearAll").addEventListener("click", async ()=>{
-  const msg = `Clear ALL weeks (Weeks 1–${WEEK_COUNT})?\n\nThis will:\n• Remove all items from every week's plan\n• Uncheck all completed items in every week\n• Reset all global completion counts to 0\n\nThis cannot be undone. Continue?`;
+
+const msg =
+  `Clear ALL weeks (Weeks 1–${WEEK_COUNT})?\n\n` +
+  `This will:\n` +
+  `• Remove all items from every week’s plan\n` +
+  `• Uncheck everything that was marked “completed” in any week\n` +
+  `• Reset every item’s “Completed X times” total to 0\n\n` +
+  `This cannot be undone. Continue?`;
+
   const ok = await appConfirm(msg, "Clear All Weeks");
   if (!ok) return;
 
