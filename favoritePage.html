@@ -6,6 +6,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Infield Language Program Planning Tool</title>
 <style>
+/* ===== Minor utility ===== */
+.accordion-controls {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 6px;
+}
+
 /* ===== THEME & BASE ===== */
 :root{
   --text:#0f172a; --muted:#6b7280; --border:#cbd5e1; --bg:#ffffff;
@@ -13,20 +20,18 @@
   --green-border:#298e44; --green-bg:#dff3e6;
   --blue-border:#027da5;  --blue-bg:#e3f2fd;
   --yellow-border:#ffb81d;--yellow-bg:#fff4cf;
-
   --ok-bg:#22c55e; --ok-bg-hover:#16a34a; --ok-border:#15803d;
 }
 *{box-sizing:border-box}
 body{
   margin:12px;background:var(--bg);color:var(--text);
   font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  line-height:1.4;font-size:16px;
+  line-height:1.5;font-size:17.5px;
 }
 h1{margin:0 0 6px 0;font-size:1.8rem}
 h2{margin:18px 0 6px;font-size:1.22rem}
 h3{margin:10px 0 4px;font-size:1.02rem}
 hr{margin:18px 0;border:none;border-top:1px solid var(--border)}
-
 /* Smaller H1 on small screens */
 @media (max-width:480px){
   h1{font-size:1.42rem;}
@@ -44,8 +49,8 @@ hr{margin:18px 0;border:none;border-top:1px solid var(--border)}
   font-size:1rem;line-height:1;padding:0 2px;color:#0b6aa5
 }
 .notice-pop{
-  position:absolute; inset:auto auto auto 0;
-  max-width:600px; background:#fff; border:1px solid var(--border);
+  position:fixed; /* fixed so we can use viewport coords */
+  width: 700px; max-width:90vw; background:#fff; border:1px solid var(--border);
   border-radius:8px; padding:10px 12px; box-shadow:0 8px 24px rgba(0,0,0,.12);
   font-size:.95rem; z-index:20; display:none;
 }
@@ -75,8 +80,8 @@ hr{margin:18px 0;border:none;border-top:1px solid var(--border)}
 
 /* ===== CARDS (compact) ===== */
 .card{
-  background:#fff;border:1px solid var(--border);border-radius:8px;
-  padding:6px 8px;margin:5px 0;box-shadow:0 1px 2px rgba(0,0,0,.05)
+  background:#fff;border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;margin:8px 0;box-shadow:0 1px 2px rgba(0,0,0,.05)
 }
 /* top row: remove (left) + circle-check + number/title + right actions (link + move) */
 .card-row{display:flex;gap:6px}
@@ -98,11 +103,15 @@ hr{margin:18px 0;border:none;border-top:1px solid var(--border)}
 
 /* Buttons compact */
 .add-btn,.remove-btn,.move-next,.btn{
-  padding:4px 8px;border-radius:6px;border:1px solid var(--border);
-  background:#fff;cursor:pointer;font-size:.85rem;line-height:1
+  padding:8px 12px;border-radius:8px;border:1px solid var(--border);
+  background:#fff;cursor:pointer;font-size:.95rem;line-height:1.1;
 }
 .add-btn{padding:2px 7px}
 .remove-btn{padding:2px 7px}
+
+/* Disabled state for Previous / Next week buttons */
+.nav-btn:disabled{opacity:0.35;cursor:not-allowed}
+.nav-btn:disabled .arrow,.nav-btn:disabled .label{opacity:0.35}
 
 /* disable add when already in plan */
 .add-btn:disabled{opacity:.5;background:#f2f2f2;cursor:not-allowed}
@@ -138,9 +147,34 @@ hr{margin:18px 0;border:none;border-top:1px solid var(--border)}
 .completed .card-title-text{text-decoration:line-through;color:var(--muted)}
 
 /* ===== PLAN ACTIONS ===== */
-.plan-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.plan-actions .spacer{flex:1}
-.btn:disabled,.move-next:disabled{opacity:.5;cursor:not-allowed}
+/* Plan actions laid out as Left | Center | Right */
+.plan-actions{
+  display:grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items:center;
+  gap:6px;
+  margin-top:6px;
+}
+/* Positioning “zones” */
+.actions-left{ justify-self:start; }
+.actions-center{ justify-self:center; display:flex; gap:6px; flex-wrap:wrap; }
+.actions-right{ justify-self:end; }
+/* Prev/Next buttons: bold label + arrow */
+.nav-btn{
+  font-weight:800;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+/* Arrow styling */
+.nav-btn .arrow{
+  font-weight:800;
+  line-height:1;
+}
+/* Small screens: show only the arrows on prev/next and icons in center */
+@media (max-width: 520px){
+  .nav-btn .label, .icon-btn .label{ display:none; }
+}
 
 /* ===== STICKY MINI ===== */
 .sticky-mini{
@@ -165,89 +199,176 @@ footer{margin-top:20px;text-align:center;color:#555;font-size:.82rem}
 
 /* ===== RESPONSIVE ===== */
 @media (min-width:800px){ .plan-grid{grid-template-columns:1fr 1fr 1fr} }
+
+/* ===== App Modal (custom alert/confirm) ===== */
+.app-modal[aria-hidden="true"]{ display: none; }
+.app-modal {
+  position: fixed; inset: 0; z-index: 1000;
+  display: grid; place-items: center;
+}
+.app-modal__backdrop {
+  position: absolute; inset: 0; background: rgba(0,0,0,.35);
+}
+.app-modal__dialog {
+  position: relative; width: min(700px, 90vw);
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: 0 12px 36px rgba(0,0,0,.22);
+  overflow: hidden;
+}
+.app-modal__header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 12px; background: var(--gray-plan-bg); border-bottom:1px solid var(--border);
+}
+.app-modal__title { font-weight:800; }
+.app-modal__close {
+  border:none; background:transparent; font-size:1.2rem; cursor:pointer; line-height:1;
+}
+.app-modal__body { padding:14px 12px; font-size:.97rem; color:#111; }
+.app-modal__footer {
+  display:flex; gap:8px; justify-content:flex-end; padding:10px 12px; border-top:1px solid var(--border);
+}
+@media (max-width: 520px){
+  .app-modal__dialog { width: min(480px, 94vw); }
+}
+
+/* ===== Toast ===== */
+.toast{
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: .9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+  z-index: 1200;
+}
+.toast.show{
+  opacity: 0.95;
+  transform: translateX(-50%) translateY(0);
+}
+@media (max-width: 520px){
+  .toast{
+    width: calc(100vw - 24px);
+    text-align: center;
+  }
+}
+
 </style>
 </head>
 <body>
-  <div class="top-row">
-    <h1>Infield Language Program Planning Tool</h1>
 
-    <!-- Option C: one-line microcopy + info button with a tiny popover -->
-    <div class="notice-info" style="position:relative;">
-      <span class="notice-line">Data stays on this device.</span>
-      <button id="noticeBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="noticePop" title="More info">ⓘ</button>
-      <div id="noticePop" class="notice-pop" role="dialog" aria-modal="false" aria-labelledby="noticeTitle">
-        <strong id="noticeTitle">How your data is saved</strong>
-        <p style="margin:.35rem 0 0;">
-          Your data is saved only in your browser on this device. To avoid losing it,
-          use the same browser and don’t clear your cache. We also recommend writing down
-          your language study plan each week as a backup.
-        </p>
-      </div>
+<div class="top-row">
+  <h1>Infield Language Program Planning Tool</h1>
+  <!-- Option C: one-line microcopy + info button with a tiny popover -->
+  <div class="notice-info" style="position:relative;">
+    <span class="notice-line">Data stays on this device.</span>
+    <button id="noticeBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="noticePop" title="More info">ⓘ</button>
+    <div id="noticePop" class="notice-pop" role="dialog" aria-modal="false" aria-labelledby="noticeTitle">
+      <strong id="noticeTitle">How your data is saved</strong>
+      <p style="margin:.35rem 0 0;">
+        Your data is saved only in your browser on this device. To avoid losing it,
+        use the same browser and don’t clear your cache. Consider copying or writing down
+        your language study plan each week as a backup.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <div>
+    <label for="week-select">Week</label><br/>
+    <select id="week-select"></select>
+  </div>
+  <div>
+    <label for="entry-date">Infield Entry Date</label><br/>
+    <input type="date" id="entry-date"/>
+  </div>
+</div>
+
+<!-- Sticky shows week number -->
+<div id="stickyMini" class="sticky-mini">→ Week 1 Study Plan</div>
+
+<div id="planWrapper" class="plan-wrapper">
+  <div class="plan-title" id="planTitle"></div>
+  <div class="plan-dates" id="planDates"></div>
+
+  <div class="plan-grid">
+    <div class="plan-box green-box">
+      <h4>Preach My Gospel study section</h4>
+      <ul id="planPMG" class="plan-list"></ul>
+    </div>
+    <div class="plan-box blue-box">
+      <h4>Language Skills</h4>
+      <ul id="planSkills" class="plan-list"></ul>
+    </div>
+    <div class="plan-box yellow-box">
+      <h4>Evaluate Your Language Study</h4>
+      <ul id="planEval" class="plan-list"></ul>
     </div>
   </div>
 
-  <div class="controls">
-    <div>
-      <label for="week-select">Week</label><br/>
-      <select id="week-select"></select>
-    </div>
-    <div>
-      <label for="entry-date">Infield Entry Date</label><br/>
-      <input type="date" id="entry-date"/>
-    </div>
-  </div>
-
-  <!-- Sticky shows week number -->
-  <div id="stickyMini" class="sticky-mini">→ Week 1 Study Plan</div>
-
-  <div id="planWrapper" class="plan-wrapper">
-    <div class="plan-title" id="planTitle"></div>
-    <div class="plan-dates" id="planDates"></div>
-
-    <div class="plan-grid">
-      <div class="plan-box green-box">
-        <h4>Preach My Gospel study section</h4>
-        <ul id="planPMG" class="plan-list"></ul>
-      </div>
-      <div class="plan-box blue-box">
-        <h4>Language Skills</h4>
-        <ul id="planSkills" class="plan-list"></ul>
-      </div>
-      <div class="plan-box yellow-box">
-        <h4>Evaluate Your Language Study</h4>
-        <ul id="planEval" class="plan-list"></ul>
-      </div>
+  <div class="plan-actions">
+    <!-- Left: Previous Week -->
+    <div class="actions-left">
+      <button class="btn nav-btn prev" id="prevWeek" aria-label="Previous Week">
+        <span class="arrow" aria-hidden="true">←</span>
+        <span class="label">Previous Week</span>
+      </button>
     </div>
 
-    <div class="plan-actions">
-      <button class="btn" id="clearWeek">Clear Week</button>
-      <button class="btn" id="clearAll">Clear All</button>
-      <button class="btn" id="copyPlan">Copy Plan</button>
-      <div class="spacer"></div>
-      <button class="btn" id="nextWeek">Next Week →</button>
+    <!-- Center: Clear Week • Copy Plan • Clear All (new order) -->
+    <div class="actions-center">
+      <button class="btn icon-btn" id="clearWeek">
+        <span class="icon" aria-hidden="true">🧹</span>
+        <span class="label">Clear Week</span>
+      </button>
+      <button class="btn icon-btn" id="copyPlan">
+        <span class="icon" aria-hidden="true">⧉</span>
+        <span class="label">Copy Plan</span>
+      </button>
+      <button class="btn icon-btn" id="clearAll">
+        <span class="icon" aria-hidden="true">🗑</span>
+        <span class="label">Clear All</span>
+      </button>
+    </div>
+
+    <!-- Right: Next Week -->
+    <div class="actions-right">
+      <button class="btn nav-btn next" id="nextWeek" aria-label="Next Week">
+        <span class="label">Next Week</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </button>
     </div>
   </div>
+</div>
 
-  <hr />
+<hr />
+<h2>Study Topic Options</h2>
+<!-- PMG as an accordion under “Preach My Gospel Study” -->
+<h3>Preach My Gospel Study</h3>
+<div id="pmgSource"></div>
 
-  <h2>Study Topic Options</h2>
+<h3>Language Tasks and Skills</h3>
+<div class="accordion-controls">
+  <button class="btn" id="expandAllLanguage">Expand all</button>
+  <button class="btn" id="collapseAllLanguage">Collapse all</button>
+</div>
+<div id="languageSource"></div>
 
-  <!-- PMG as an accordion under “Preach My Gospel Study” -->
-  <h3>Preach My Gospel Study</h3>
-  <div id="pmgSource"></div>
-
-  <h3>Language Tasks and Skills</h3>
-  <div id="languageSource"></div>
-
-  <footer>
-    The code and functionality of this page were created using AI.
-  </footer>
+<footer>
+  The code and functionality of this page were created using AI.
+</footer>
 
 <script>
 /* =========================================================
    CONTENT MAPS — EDIT THESE ONLY
+   (Kept intact from your original file)
    ========================================================= */
-
 // PMG Topics (green box source)
 const PMG_TOPICS = [
   { id: "pmg1", title: "Prepare Yourself Spiritually", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title3-p7#title3" },
@@ -269,110 +390,92 @@ const LANGUAGE_SECTIONS = [
     items:[ { id:"item2", title:"Lesson 2: Heavenly Father’s Plan of Salvation", link:"#"} ] },
   { id:"lesson3", title:"Lesson 3: The Gospel of Jesus Christ",
     items:[ { id:"item3", title:"Lesson 3: The Gospel of Jesus Christ", link:"#"} ] },
-
   { id:"pray-faith", title:"Pray with Faith in Jesus Christ",
     items:[
       { id:"item4", title:"“Pray for those you are teaching.” (105)", link:"#"},
       { id:"item5", title:"“Pray simply and sincerely that God will bless the people you are teaching” (181)", link:"#"},
       { id:"item6", title:"“As needed, teach the person how to pray” (72)", link:"#"}
-    ]},
-
+  ]},
   { id:"talk-everyone", title:"Talk with Everyone",
     items:[
       { id:"item7", title:"“Ask a question and listen to their response” (166)", link:"#"},
       { id:"item8", title:"“Ask about their families. Help them see how the restored gospel can bless their families.” (166)", link:"#"},
       { id:"item9", title:"“Share with them your purpose as a missionary and why you decided to serve a mission.” (166)", link:"#"}
-    ]},
-
+  ]},
   { id:"unite-members", title:"Unite with Members",
     items:[
       { id:"item10", title:"“Build Strong Relationships with Local Leaders” (167)", link:"#"},
       { id:"item11", title:"“Support Members in Their Efforts to Share the Gospel” (168)", link:"#"},
       { id:"item12", title:"“Promise Blessings for Sharing the Gospel” (169)", link:"#"}
-    ]},
-
+  ]},
   { id:"find-people", title:"Find People Where They Are",
     items:[
       { id:"item13", title:"“Find out what is most important to them” (171)", link:"#"},
       { id:"item14", title:"Seek to understand others’ interests (171)", link:"#"},
       { id:"item15", title:"Discuss challenges people face (171)", link:"#"}
-    ]},
-
+  ]},
   { id:"invite-spirit", title:"Invite the Spirit as You Begin Teaching",
     items:[
       { id:"item16", title:"“Ask a few simple questions to help you understand their background and their expectations” (181)", link:"#"},
       { id:"item17", title:"“Explain that you would like to begin and end each lesson with prayer.” (181)", link:"#"},
       { id:"item18", title:"“Give a simple overview of what you will teach.” (182)", link:"#"}
-    ]},
-
+  ]},
   { id:"use-scriptures", title:"Use the Scriptures",
     items:[
       { id:"item19", title:"“Introduce the Scripture” (183)", link:"#"},
       { id:"item20", title:"“Apply the Scriptures” (183)", link:"#"},
       { id:"item21", title:"“Invite and Help People to Read on Their Own” (183)", link:"#"}
-    ]},
-
+  ]},
   { id:"share-testimony-1", title:"Share Your Testimony (Part 1)",
     items:[
       { id:"item22", title:"“Share a brief experience about how you gained this testimony.” (185)", link:"#"},
       { id:"item23", title:"“When your companion is teaching, share your testimony to provide a second witness” (185)", link:"#"},
       { id:"item24", title:"“Share your testimony that the principle you are teaching will bless the person’s life if he or she will follow it.” (185)", link:"#"}
-    ]},
-
+  ]},
   { id:"teach-understanding", title:"Teach for Understanding",
     items:[
       { id:"item25", title:"“Ask questions to help people think about what you have taught.” (189)", link:"#"},
       { id:"item26", title:"“Explain words, phrases, and ideas.” (189)", link:"#"},
       { id:"item27", title:"“Keep your teaching simple and brief.” (189)", link:"#"}
-    ]},
-
+  ]},
   { id:"ask-questions", title:"Ask Questions",
     items:[
       { id:"item28", title:"“Ask questions that help people feel the Spirit.” (190)", link:"#"},
       { id:"item29", title:"“Ask questions that help you know how well people understand what you are teaching.” (190)", link:"#"},
       { id:"item30", title:"“Ask questions that help people apply what they learn.” (191)", link:"#"}
-    ]},
-
+  ]},
   { id:"extend-invitations", title:"Extend Invitations",
     items:[
       { id:"item31", title:"“Invite with kind and clear language:” Church (203)", link:"#"},
       { id:"item32", title:"“Invite with kind and clear language:” Baptism (203)", link:"#"},
       { id:"item33", title:"“Invite with kind and clear language:” Read the scriptures (203)", link:"#"}
-    ]},
-
+  ]},
   { id:"promise-blessings", title:"Promise People Blessings",
     items:[
       { id:"item34", title:"“Prayerfully decide what blessings to promise each person as you extend invitations.” (204)", link:"#"},
       { id:"item35", title:"“Assure [those you teach] that God will bless them as they strive to do His will.” (204)", link:"#"},
       { id:"item36", title:"“Help [those you teach] understand that opposition is an opportunity to grow by choosing to follow Christ even when it is difficult” (204)", link:"#"}
-    ]},
-
+  ]},
   { id:"share-testimony-2", title:"Share Your Testimony (Part 2)",
     items:[
       { id:"item37", title:"“Share your testimony whenever you extend an invitation and promise blessings.” (205)", link:"#"},
       { id:"item38", title:"“Tell how you have been blessed as you have lived the principle you are teaching.” (205)", link:"#"},
       { id:"item39", title:"“Share your testimony that the principle will bless the person’s life as he or she lives it.” (205)", link:"#"}
-    ]},
-
+  ]},
   { id:"keep-commitments", title:"Help People Keep Their Commitments",
     items:[
       { id:"item40", title:"“Encourage and Help People in Your Daily Contact” (206)", link:"#"},
       { id:"item41", title:"“Have the Influence of the Holy Ghost in Your Daily Contact” (206)", link:"#"},
       { id:"item42", title:"“Show Love” (207)", link:"#"}
-    ]},
-
+  ]},
   { id:"schedule-appointments", title:"Schedule Appointments",
     items:[ { id:"item43", title:"Schedule Appointments", link:"#"} ] },
-
   { id:"talk-food", title:"Talk about Food",
     items:[ { id:"item44", title:"Talk about Food", link:"#"} ] },
-
   { id:"talk-health", title:"Talk about Health",
     items:[ { id:"item45", title:"Talk about Health", link:"#"} ] },
-
   { id:"transportation", title:"Transportation",
     items:[ { id:"item46", title:"Transportation", link:"#"} ] },
-
   { id:"daily-life", title:"Daily Life Topic of Choice",
     items:[ { id:"item47", title:"Daily Life Topic of Choice", link:"#"} ] }
 ];
@@ -381,19 +484,20 @@ const LANGUAGE_SECTIONS = [
    STORAGE KEYS & HELPERS
    ========================================================= */
 const WEEK_COUNT = 12;
-const getFavKeyPMG   = (w) => `plan_pmg_week_${w}`;
-const getFavKeySkill = (w) => `plan_skills_week_${w}`;
-const getWeekStateKey= (w) => `completion_week_${w}`;
-const EVAL_KEY       = (w) => `evaluation_week_${w}`;
+const getFavKeyPMG   = (w)=> `plan_pmg_week_${w}`;
+const getFavKeySkill = (w)=> `plan_skills_week_${w}`;
+const getWeekStateKey= (w)=> `completion_week_${w}`;
+const EVAL_KEY       = (w)=> `evaluation_week_${w}`;
 const COUNTS_KEY     = "completionCounts";
 
-const readSet = (key) => new Set(JSON.parse(localStorage.getItem(key) || "[]"));
-const writeSet = (key, s) => localStorage.setItem(key, JSON.stringify(Array.from(s)));
-const readObj = (key) => JSON.parse(localStorage.getItem(key) || "{}");
-const writeObj = (key, o) => localStorage.setItem(key, JSON.stringify(o));
-const readCounts = () => JSON.parse(localStorage.getItem(COUNTS_KEY) || "{}");
-const writeCounts = (o) => localStorage.setItem(COUNTS_KEY, JSON.stringify(o));
-const getCount = (id) => (readCounts()[id] || 0);
+const readSet  = (key)=> new Set(JSON.parse(localStorage.getItem(key) || "[]"));
+const writeSet = (key, s)=> localStorage.setItem(key, JSON.stringify(Array.from(s)));
+const readObj  = (key)=> JSON.parse(localStorage.getItem(key) || "{}");
+const writeObj = (key, o)=> localStorage.setItem(key, JSON.stringify(o));
+const readCounts = ()=> JSON.parse(localStorage.getItem(COUNTS_KEY) || "{}");
+const writeCounts= (o)=> localStorage.setItem(COUNTS_KEY, JSON.stringify(o));
+const getCount   = (id)=> (readCounts()[id] || 0);
+
 function incCount(id){ const c=readCounts(); c[id]=(c[id]||0)+1; writeCounts(c); updateCompletionDisplays(id); }
 function decCount(id){ const c=readCounts(); c[id]=Math.max(0,(c[id]||0)-1); writeCounts(c); updateCompletionDisplays(id); }
 
@@ -410,7 +514,7 @@ for (let i=1;i<=WEEK_COUNT;i++){
   weekSelect.appendChild(opt);
 }
 weekSelect.value = String(activeWeek);
-weekSelect.addEventListener("change", () => setActiveWeek(parseInt(weekSelect.value,10)));
+weekSelect.addEventListener("change", ()=> setActiveWeek(parseInt(weekSelect.value,10)));
 
 const entryDateEl = document.getElementById("entry-date");
 (function initEntryDate(){
@@ -418,14 +522,13 @@ const entryDateEl = document.getElementById("entry-date");
   const today = new Date();
   entryDateEl.value = saved || toInput(today);
   localStorage.setItem("infieldEntryDate", entryDateEl.value);
-  entryDateEl.addEventListener("change", ()=> {
-    if (entryDateEl.value) {
+  entryDateEl.addEventListener("change", ()=>{
+    if (entryDateEl.value){
       localStorage.setItem("infieldEntryDate", entryDateEl.value);
       updatePlanHeader();
     }
   });
 })();
-
 function toInput(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),da=String(d.getDate()).padStart(2,"0"); return `${y}-${m}-${da}`; }
 function fromInput(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
 function computeBaseMonday(entryDate){
@@ -468,15 +571,13 @@ function renderSources(){
   /* PMG as a collapsed accordion under “Chapter 7 Topics” */
   pmgSource.innerHTML = "";
   const pmgSection = document.createElement("div");
-  pmgSection.className = "section collapsed";  // collapsed by default
+  pmgSection.className = "section collapsed"; // collapsed by default
   pmgSection.dataset.sectionId = "pmg-ch7";
-
   const pmgHeader = document.createElement("div");
   pmgHeader.className = "section-header";
   pmgHeader.innerHTML = `<span class="arrow">▶</span><span>Chapter 7 Topics</span>`;
   pmgHeader.addEventListener("click", ()=> pmgSection.classList.toggle("collapsed"));
   pmgSection.appendChild(pmgHeader);
-
   const pmgList = document.createElement("ul");
   pmgList.className = "section-items source-list";
   PMG_TOPICS.forEach(t=>{
@@ -492,13 +593,11 @@ function renderSources(){
     const sWrap = document.createElement("div");
     sWrap.className = "section collapsed";
     sWrap.dataset.sectionId = sec.id;
-
     const header = document.createElement("div");
     header.className = "section-header";
     header.innerHTML = `<span class="arrow">▶</span><span>${sectionNum.get(sec.id)}. ${sec.title}</span>`;
     header.addEventListener("click", ()=> sWrap.classList.toggle("collapsed"));
     sWrap.appendChild(header);
-
     const items = document.createElement("ul");
     items.className = "section-items source-list";
     sec.items.forEach((it, index)=>{
@@ -510,27 +609,34 @@ function renderSources(){
   });
 
   refreshAddButtons();
+  refreshAllCompletionDisplays(); // ensure source cards show current counts on render
 }
 
 function buildSourceLi(item, kind){
   const li = document.createElement("li");
   li.dataset.itemId = item.id;
-
   const card = document.createElement("div"); card.className="card";
   const top = document.createElement("div"); top.className="card-row top";
-
   /* Source row: [+] then title (no link/move here) */
   const actionsLeft = document.createElement("div"); actionsLeft.className="card-actions-left";
   const btn = document.createElement("button"); btn.className="add-btn"; btn.textContent="+";
   actionsLeft.appendChild(btn);
-
   const title = document.createElement("div"); title.className="card-title";
   const titleText = document.createElement("span"); titleText.className="card-title-text"; titleText.textContent=item.title;
   title.appendChild(titleText);
-
   top.appendChild(actionsLeft);
   top.appendChild(title);
   card.appendChild(top);
+
+  /* NEW: completion line under source card, kept in sync by updateCompletionDisplays */
+  const line = document.createElement("div");
+  line.className = "completion-line";
+  line.dataset.compId = item.id;
+  (function initSourceLine(){
+    const count = getCount(item.id);
+    line.textContent = count > 0 ? `Completed ${count} ${count===1 ? "time" : "times"}` : "";
+  })();
+  card.appendChild(line);
 
   btn.addEventListener("click", (e)=>{
     e.stopPropagation();
@@ -538,7 +644,6 @@ function buildSourceLi(item, kind){
     if (kind==="pmg") addPMGToPlan(item);
     else addSkillToPlan(item);
   });
-
   li.appendChild(card);
   return li;
 }
@@ -546,17 +651,19 @@ function buildSourceLi(item, kind){
 /* =========================================================
    PLAN RENDER & ACTIONS (open-circle check + reordered)
    ========================================================= */
-const planPMG = document.getElementById("planPMG");
-const planSkills = document.getElementById("planSkills");
-const planEval = document.getElementById("planEval");
-const stickyMini = document.getElementById("stickyMini");
+const planPMG   = document.getElementById("planPMG");
+const planSkills= document.getElementById("planSkills");
+const planEval  = document.getElementById("planEval");
+const stickyMini= document.getElementById("stickyMini");
 
-function setActiveWeek(w){
-  activeWeek = w;
-  localStorage.setItem("activeWeek", String(w));
-  weekSelect.value = String(w);
-  renderPlan();
-  refreshAddButtons();
+function refreshNavButtons(){
+  const prevBtn = document.getElementById("prevWeek");
+  const nextBtn = document.getElementById("nextWeek");
+  if (!prevBtn || !nextBtn) return;
+  prevBtn.disabled = activeWeek <= 1;
+  nextBtn.disabled = activeWeek >= WEEK_COUNT;
+  prevBtn.title = prevBtn.disabled ? "You are on Week 1" : "";
+  nextBtn.title = nextBtn.disabled ? "You are on Week 12" : "";
 }
 
 function updatePlanHeader(){
@@ -596,7 +703,6 @@ function renderPlan(){
   // Evaluation (always present)
   planEval.innerHTML="";
   planEval.appendChild(buildEvalLi());
-
   refreshAddButtons();
 }
 
@@ -611,7 +717,6 @@ function findItemById(id){
 function buildPlanLi(item, kind, displayNum){
   const li = document.createElement("li");
   li.dataset.planId = item.id;
-
   const card = document.createElement("div"); card.className="card in-plan";
 
   /* ---- TOP ROW: remove (left) + circle-check + [num + title] + right actions (link + move) ---- */
@@ -621,7 +726,7 @@ function buildPlanLi(item, kind, displayNum){
   const remove = document.createElement("button"); remove.className="remove-btn"; remove.title="Remove"; remove.textContent="–";
   actionsLeft.appendChild(remove);
 
-  // Circle check (open/filled) — separate sibling so it can top-align independently
+  // Circle check (open/filled)
   const circle = document.createElement("button");
   circle.className = "circle-check";
   circle.setAttribute("role","checkbox");
@@ -642,7 +747,6 @@ function buildPlanLi(item, kind, displayNum){
   linkA.className="ext-link"; linkA.textContent="↗"; linkA.href=item.link||"#"; linkA.target="_blank"; linkA.rel="noopener noreferrer";
   linkA.dataset.linkId=item.id;
   const moveNext = document.createElement("button"); moveNext.className="move-next"; moveNext.title="Move or repeat to next week";
-
   right.appendChild(linkA); right.appendChild(moveNext);
 
   top.appendChild(actionsLeft);
@@ -665,14 +769,11 @@ function buildPlanLi(item, kind, displayNum){
   circle.addEventListener("keydown", (e)=>{
     if (e.key === " " || e.key === "Enter"){ e.preventDefault(); toggleCheck(item.id); }
   });
-
   function toggleCheck(id){
     const state = readObj(getWeekStateKey(activeWeek));
     const now = !state[id];
     state[id] = now; writeObj(getWeekStateKey(activeWeek), state);
-
     if (now) incCount(id); else decCount(id);
-
     isChecked = now;
     applyCheckUI(isChecked, circle, card, line, id);
     refreshMoveNextButton(moveNext, item, kind, isChecked);
@@ -686,7 +787,7 @@ function buildPlanLi(item, kind, displayNum){
       const set = readSet(getFavKeySkill(activeWeek));
       set.delete(item.id); writeSet(getFavKeySkill(activeWeek), set);
     }
-    renderPlan();
+    refreshUI();
   });
 
   refreshMoveNextButton(moveNext, item, kind, isChecked);
@@ -726,50 +827,41 @@ function refreshMoveNextButton(btn, item, kind, isChecked){
   btn.title = alreadyThere ? "Already in next week's plan." : (isChecked ? "Repeat in next week" : "Move to next week");
 }
 
-function handleMoveNext(item, kind, isChecked){
+async function handleMoveNext(item, kind, isChecked){
   const nextWeek = activeWeek + 1;
-  if (nextWeek > WEEK_COUNT){ alert("This is Week 12; there is no next week to move to."); return; }
+  if (nextWeek > WEEK_COUNT) return; // button is disabled anyway
 
   if (kind==="pmg"){
     const nset = readSet(getFavKeyPMG(nextWeek));
     const currentNext = nset.values().next().value || null;
     if (currentNext && currentNext !== item.id){
-      const ok = confirm(`Next week already has a PMG topic. Replace it with "${item.title}"?`);
+      const ok = await appConfirm(`Next week already has a PMG topic. Replace it with "${item.title}"?`, "Replace PMG for next week");
       if (!ok) return;
       nset.clear();
     }
     nset.add(item.id); writeSet(getFavKeyPMG(nextWeek), nset);
-
     if (!isChecked){
       const cset = readSet(getFavKeyPMG(activeWeek)); cset.clear(); writeSet(getFavKeyPMG(activeWeek), cset);
       const state = readObj(getWeekStateKey(activeWeek)); Object.keys(state).forEach(k=>{ if(k===item.id) state[k]=false; }); writeObj(getWeekStateKey(activeWeek), state);
     }
     const nstate = readObj(getWeekStateKey(nextWeek)); nstate[item.id] = false; writeObj(getWeekStateKey(nextWeek), nstate);
-
   } else {
     const nset = readSet(getFavKeySkill(nextWeek));
     if (!nset.has(item.id)) nset.add(item.id); writeSet(getFavKeySkill(nextWeek), nset);
-
     if (!isChecked){
       const cset = readSet(getFavKeySkill(activeWeek)); cset.delete(item.id); writeSet(getFavKeySkill(activeWeek), cset);
       const state = readObj(getWeekStateKey(activeWeek)); state[item.id] = false; writeObj(getWeekStateKey(activeWeek), state);
     }
     const nstate = readObj(getWeekStateKey(nextWeek)); nstate[item.id] = false; writeObj(getWeekStateKey(nextWeek), nstate);
   }
-
-  renderPlan();
+  refreshUI();
 }
 
 /* ===== Evaluation special card (open-circle; no counts) ===== */
 function buildEvalLi(){
   const li = document.createElement("li");
   const card = document.createElement("div"); card.className="card in-plan";
-
   const top = document.createElement("div"); top.className="card-row top";
-
-  const actionsLeft = document.createElement("div"); actionsLeft.className="card-actions-left";
-  const remove = document.createElement("button"); remove.className="remove-btn"; remove.title="Remove"; remove.textContent="–";
-  actionsLeft.appendChild(remove);
 
   // circle check
   const circle = document.createElement("button");
@@ -786,26 +878,20 @@ function buildEvalLi(){
 
   const right = document.createElement("div"); right.className="right-actions";
   const a = document.createElement("a"); a.className="ext-link"; a.textContent="↗"; a.href="https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=figure2_title1-figure2_p8#figure2_title1"; a.target="_blank"; a.rel="noopener noreferrer"; a.dataset.linkId="evaluation";
-  const moveNext = document.createElement("button"); moveNext.className="move-next"; moveNext.title="Move or repeat to next week";
   right.appendChild(a);
 
-  top.appendChild(actionsLeft); top.appendChild(circle); top.appendChild(title); top.appendChild(right);
+  top.appendChild(circle); top.appendChild(title); top.appendChild(right);
   card.appendChild(top);
 
   const line = document.createElement("div"); line.className="completion-line"; card.appendChild(line);
 
-  // evaluation cannot be removed
-  remove.disabled = true; remove.title = "This item cannot be removed";
-
   let isOn = localStorage.getItem(EVAL_KEY(activeWeek)) === "true";
   applyCheckUI(isOn, circle, card, line, "evaluation"); // counts ignored for evaluation
-
   circle.addEventListener("click", ()=>{
     isOn = !isOn; localStorage.setItem(EVAL_KEY(activeWeek), String(isOn));
     applyCheckUI(isOn, circle, card, line, "evaluation");
   });
   circle.addEventListener("keydown",(e)=>{ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); circle.click(); }});
-
 
   li.appendChild(card);
   return li;
@@ -820,7 +906,7 @@ function refreshAddButtons(){
   document.querySelectorAll('#pmgSource li[data-item-id]').forEach(li=>{
     const id = li.dataset.itemId;
     const btn = li.querySelector('.add-btn');
-    btn.disabled = (id === chosen);  // only the chosen PMG disabled
+    btn.disabled = (id === chosen); // only the chosen PMG disabled
   });
 
   const skillSet = readSet(getFavKeySkill(activeWeek));
@@ -832,37 +918,63 @@ function refreshAddButtons(){
 }
 
 /* =========================================================
+   LANGUAGE ACCORDION CONTROLS
+   ========================================================= */
+document.getElementById("expandAllLanguage").addEventListener("click", () => {
+  document.querySelectorAll("#languageSource .section").forEach(sec => sec.classList.remove("collapsed"));
+});
+document.getElementById("collapseAllLanguage").addEventListener("click", () => {
+  document.querySelectorAll("#languageSource .section").forEach(sec => sec.classList.add("collapsed"));
+});
+
+/* =========================================================
    ADD TO PLAN (from source)
    ========================================================= */
-function addPMGToPlan(topic){
+async function addPMGToPlan(topic){
   const set = readSet(getFavKeyPMG(activeWeek));
-  if (set.size===0){ set.add(topic.id); writeSet(getFavKeyPMG(activeWeek), set); renderPlan(); return; }
-  const ok = window.confirm(`You can only have one study focus in this section. Would you like to change it to "${topic.title}"?`);
-  if (ok){
-    set.clear(); set.add(topic.id); writeSet(getFavKeyPMG(activeWeek), set);
-    const state = readObj(getWeekStateKey(activeWeek));
-    Object.keys(state).forEach(k=>{ if (k.startsWith("pmg")) state[k]=false; });
-    writeObj(getWeekStateKey(activeWeek), state);
-    renderPlan();
+  // If nothing selected yet, just add it
+  if (set.size === 0){
+    set.add(topic.id);
+    writeSet(getFavKeyPMG(activeWeek), set);
+    refreshUI();
+    return;
   }
+  // Otherwise, confirm replacement
+  const ok = await appConfirm(
+    `You can only have one study focus in this section. Would you like to change it to "${topic.title}"?`,
+    "Replace Study Focus"
+  );
+  if (!ok) return;
+
+  // Replace existing PMG topic
+  set.clear();
+  set.add(topic.id);
+  writeSet(getFavKeyPMG(activeWeek), set);
+
+  // Clear checked state for PMG items this week
+  const state = readObj(getWeekStateKey(activeWeek));
+  Object.keys(state).forEach(k => { if (k.startsWith("pmg")) state[k]=false; });
+  writeObj(getWeekStateKey(activeWeek), state);
+
+  refreshUI();
 }
 
 function addSkillToPlan(item){
   const set = readSet(getFavKeySkill(activeWeek));
-  if (!set.has(item.id)){ set.add(item.id); writeSet(getFavKeySkill(activeWeek), set); renderPlan(); }
+  if (!set.has(item.id)){ set.add(item.id); writeSet(getFavKeySkill(activeWeek), set); refreshUI(); }
 }
 
 /* =========================================================
    COPY PLAN → MARKDOWN (with dates & numbering)
    ========================================================= */
-document.getElementById("copyPlan").addEventListener("click", ()=>{
+document.getElementById("copyPlan").addEventListener("click", () => {
   const { start, end } = weekStartEnd(activeWeek);
   const planTitle = `## Week ${activeWeek} Study Plan`;
   const datesLine = `_${fmtFull(start)} – ${fmtFull(end)}_`;
 
   const pmgSet = readSet(getFavKeyPMG(activeWeek));
   const pmgId = pmgSet.values().next().value;
-  const pmgTopic = PMG_TOPICS.find(t=>t.id===pmgId);
+  const pmgTopic = PMG_TOPICS.find(t => t.id === pmgId);
 
   const { itemNum } = buildNumberingMaps();
   const skillSet = readSet(getFavKeySkill(activeWeek));
@@ -881,54 +993,67 @@ document.getElementById("copyPlan").addEventListener("click", ()=>{
   ];
 
   const text = lines.join("\n");
-  navigator.clipboard?.writeText(text).then(()=> alert("Plan copied to clipboard.") )
-  .catch(()=>{
-    const ta = document.createElement("textarea");
-    ta.value = text; document.body.appendChild(ta); ta.select();
-    try { document.execCommand("copy"); alert("Plan copied to clipboard."); }
-    catch { alert("Copy failed. You can select and copy manually:\n\n"+text); }
-    finally { document.body.removeChild(ta); }
-  });
+  navigator.clipboard?.writeText(text)
+    .then(()=> { showToast("Plan copied to clipboard"); })
+    .catch(()=>{
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); showToast("Plan copied to clipboard"); }
+      catch { showToast("Copy failed. You can select and copy manually."); }
+      finally { document.body.removeChild(ta); }
+    });
 });
 
 /* =========================================================
-   CLEAR ACTIONS & NEXT WEEK
+   CLEAR ACTIONS & NAV (BUG-FIXED)
    ========================================================= */
-document.getElementById("clearWeek").addEventListener("click", ()=>{
+document.getElementById("clearWeek").addEventListener("click", async ()=>{
   const { start, end } = weekStartEnd(activeWeek);
   const msg = `Clear Week ${activeWeek}?\n\nThis will:\n• Remove all items from this week's plan\n• Uncheck any completed items for this week (including Evaluation)\n• Decrease the global completion count by 1 for each item checked this week\n\nDate range: ${fmtFull(start)} – ${fmtFull(end)}\n\nThis cannot be undone. Continue?`;
-  if (!confirm(msg)) return;
+  const ok = await appConfirm(msg, "Clear Week");
+  if (!ok) return;
 
+  // Decrement counts for any items marked completed this week (not evaluation)
   const state = readObj(getWeekStateKey(activeWeek));
   Object.entries(state).forEach(([itemId, isOn])=>{
     if (isOn && itemId !== "evaluation") decCount(itemId);
   });
 
-  writeSet(getFavKeyPMG(activeWeek), new Set());
+  // Clear this week selections/state
+  writeSet(getFavKeyPMG(activeWeek),   new Set());
   writeSet(getFavKeySkill(activeWeek), new Set());
   localStorage.removeItem(EVAL_KEY(activeWeek));
   localStorage.removeItem(getWeekStateKey(activeWeek));
 
-  renderPlan();
+  refreshUI();
+  showToast(`Week ${activeWeek} cleared`);
 });
 
-document.getElementById("clearAll").addEventListener("click", ()=>{
+document.getElementById("clearAll").addEventListener("click", async ()=>{
   const msg = `Clear ALL weeks (Weeks 1–${WEEK_COUNT})?\n\nThis will:\n• Remove all items from every week's plan\n• Uncheck all completed items in every week\n• Reset all global completion counts to 0\n\nThis cannot be undone. Continue?`;
-  if (!confirm(msg)) return;
+  const ok = await appConfirm(msg, "Clear All Weeks");
+  if (!ok) return;
+
   for (let w=1; w<=WEEK_COUNT; w++){
-    writeSet(getFavKeyPMG(w), new Set());
+    writeSet(getFavKeyPMG(w),   new Set());
     writeSet(getFavKeySkill(w), new Set());
     localStorage.removeItem(EVAL_KEY(w));
     localStorage.removeItem(getWeekStateKey(w));
   }
   localStorage.removeItem(COUNTS_KEY);
-  renderPlan();
+
+  refreshUI();
+  showToast("All weeks cleared");
 });
 
-document.getElementById("nextWeek").addEventListener("click", ()=>{
-  const next = activeWeek+1;
-  if (next>WEEK_COUNT){ alert("You are on Week 12. There is no next week."); return; }
-  setActiveWeek(next);
+document.getElementById("nextWeek").addEventListener("click", () => {
+  if (activeWeek >= WEEK_COUNT) return;
+  setActiveWeek(activeWeek + 1);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+document.getElementById("prevWeek").addEventListener("click", () => {
+  if (activeWeek <= 1) return;
+  setActiveWeek(activeWeek - 1);
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
@@ -942,7 +1067,6 @@ const io = new IntersectionObserver((entries)=>{
   });
 }, { rootMargin: "-70px 0px 0px 0px", threshold: 0 });
 io.observe(planWrapper);
-
 stickyMini.addEventListener("click", ()=>{
   planWrapper.scrollIntoView({behavior:"smooth",block:"start"});
 });
@@ -958,7 +1082,7 @@ function updateCompletionDisplays(itemId){
 }
 
 /* =========================================================
-   INFO POPOVER (Option C)
+   INFO POPOVER (Option C) — fixed positioning under ⓘ
    ========================================================= */
 const noticeBtn = document.getElementById("noticeBtn");
 const noticePop = document.getElementById("noticePop");
@@ -966,12 +1090,12 @@ document.addEventListener("click", (e)=>{
   if (noticeBtn.contains(e.target)){
     const open = noticePop.classList.toggle("show");
     noticeBtn.setAttribute("aria-expanded", open?"true":"false");
-    if (open){ // position under the button
+    if (open) {
       const rect = noticeBtn.getBoundingClientRect();
-      const top = window.scrollY + rect.bottom + 8;
-      const left = Math.max(8, Math.min(window.scrollX + rect.left - 260, window.scrollX + window.innerWidth - 320));
-      noticePop.style.position = "absolute";
-      noticePop.style.top = `${top}px`;
+      const popWidth = noticePop.offsetWidth;
+      let left = rect.left + rect.width/2 - popWidth/2;
+      left = Math.max(8, Math.min(left, window.innerWidth - popWidth - 8));
+      noticePop.style.top  = `${rect.bottom + 8}px`;
       noticePop.style.left = `${left}px`;
     }
     return;
@@ -983,13 +1107,123 @@ document.addEventListener("click", (e)=>{
   }
 });
 
-/* =========================================================
-   INIT
-   ========================================================= */
-function setActiveWeek(w){ activeWeek=w; localStorage.setItem("activeWeek",String(w)); weekSelect.value=String(w); renderPlan(); refreshAddButtons(); }
+/* ===== Custom alert/confirm helpers ===== */
+function appAlert(message, {title} = {}){
+  return new Promise(resolve => {
+    openAppModal({ message, title, mode: 'alert', onOk: () => resolve() });
+  });
+}
+function appConfirm(message, title = "Confirm"){
+  return new Promise(resolve => {
+    openAppModal({ message, title, mode: 'confirm', onOk: () => resolve(true), onCancel: () => resolve(false) });
+  });
+}
+function openAppModal({ message, title, mode, onOk, onCancel }){
+  const modal = document.getElementById('appModal');
+  const msgEl = document.getElementById('appModalMessage');
+  const titleEl = modal.querySelector('.app-modal__title');
+  const btnOk = document.getElementById('appModalOk');
+  const btnCancel = document.getElementById('appModalCancel');
+  const btnClose = modal.querySelector('.app-modal__close');
+  const backdrop = modal.querySelector('.app-modal__backdrop');
 
-function init(){ renderSources(); renderPlan(); }
+  // set title & message
+  if (title) titleEl.textContent = title;
+  msgEl.textContent = message;
+
+  // show/hide Cancel depending on mode
+  btnCancel.style.display = (mode === 'confirm') ? 'inline-block' : 'none';
+
+  // open
+  modal.setAttribute('aria-hidden', 'false');
+
+  // focus management: focus OK
+  setTimeout(() => btnOk.focus(), 0);
+
+  // cleanup replaces nodes to drop old handlers
+  const cleanup = () => {
+    modal.setAttribute('aria-hidden', 'true');
+    btnOk.replaceWith(btnOk.cloneNode(true));
+    btnCancel.replaceWith(btnCancel.cloneNode(true));
+    btnClose.replaceWith(btnClose.cloneNode(true));
+    backdrop.replaceWith(backdrop.cloneNode(true));
+  };
+
+  // re-query after clone for fresh nodes, then wire handlers
+  const wire = () => {
+    const ok = document.getElementById('appModalOk');
+    const cancel = document.getElementById('appModalCancel');
+    const close = modal.querySelector('.app-modal__close');
+    const back = modal.querySelector('.app-modal__backdrop');
+
+    ok.addEventListener('click', () => { cleanup(); onOk && onOk(); });
+    cancel.addEventListener('click', () => { cleanup(); onCancel && onCancel(); });
+    close.addEventListener('click', () => { cleanup(); (onCancel || onOk)?.(); });
+    back.addEventListener('click', () => { cleanup(); (onCancel || onOk)?.(); });
+
+    modal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); cleanup(); (onCancel || onOk)?.(); }
+    });
+  };
+  wire();
+}
+
+/* ===== Toast ===== */
+let toastTimer = null;
+function showToast(message, timeout = 2000){
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, timeout);
+}
+
+/* ===== Refresh all source completion lines after rendering ===== */
+function refreshAllCompletionDisplays(){
+  PMG_TOPICS.forEach(t => updateCompletionDisplays(t.id));
+  LANGUAGE_SECTIONS.forEach(sec => { sec.items.forEach(it => updateCompletionDisplays(it.id)); });
+}
+
+/* =========================================================
+   INIT / REFRESH
+   ========================================================= */
+function refreshUI(){
+  renderPlan();
+  refreshAddButtons();
+  refreshAllCompletionDisplays();
+  refreshNavButtons();
+}
+
+function setActiveWeek(w){
+  activeWeek=w; localStorage.setItem("activeWeek",String(w)); weekSelect.value=String(w);
+  refreshUI();
+}
+
+function init(){
+  renderSources();
+  refreshUI();
+}
 init();
 </script>
+
+<!-- App Modal (replaces native alert/confirm) -->
+<div id="appModal" class="app-modal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="app-modal__backdrop"></div>
+  <div class="app-modal__dialog" role="document">
+    <div class="app-modal__header">
+      <div class="app-modal__title">Infield Planner</div>
+      <button class="app-modal__close" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="app-modal__body" id="appModalMessage"></div>
+    <div class="app-modal__footer">
+      <button class="btn" id="appModalCancel" type="button">Cancel</button>
+      <button class="btn" id="appModalOk" type="button">OK</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
