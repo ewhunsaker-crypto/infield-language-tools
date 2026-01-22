@@ -6,6 +6,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Infield Language Program Planning Tool</title>
 <style>
+
+/* ===== Passowrd Box styling ===== */
+#password-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+#password-screen input,
+#password-screen button {
+  padding: 10px;
+  font-size: 1rem;
+  margin-top: 10px;
+}
+
 /* ===== Minor utility ===== */
 .accordion-controls {
   display: flex;
@@ -195,7 +212,7 @@ hr{margin:18px 0;border:none;border-top:1px solid var(--border)}
 .source-list .card{padding:6px 8px;margin:5px 0}
 
 /* ===== FOOTER ===== */
-footer{margin-top:20px;text-align:center;color:#555;font-size:.82rem}
+footer{text-align:center;font-size:.82rem}
 
 /* ===== RESPONSIVE ===== */
 @media (min-width:800px){ .plan-grid{grid-template-columns:1fr 1fr 1fr} }
@@ -258,11 +275,35 @@ footer{margin-top:20px;text-align:center;color:#555;font-size:.82rem}
   }
 }
 
+/* Sticky footer bar */
+.footer-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 30px;
+
+  background-color: #003366; /* dark blue */
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 1000; /* Ensure it stays above content */
+}
+
+/* Prevent footer from covering content */
+body {
+  padding-bottom: 30px; /* matches footer height */
+}
+
+
 </style>
 </head>
 <body>
 
-<div class="top-row">
+  <div class="top-row">
   <h1>Infield Language Program Planning Tool</h1>
   <!-- Option C: one-line microcopy + info button with a tiny popover -->
   <div class="notice-info" style="position:relative;">
@@ -278,6 +319,21 @@ footer{margin-top:20px;text-align:center;color:#555;font-size:.82rem}
     </div>
   </div>
 </div>
+
+<!-- Password Box -->
+<div id="password-screen">
+  <h2>Please enter the password</h2>
+  <input type="text" id="password-input" placeholder="Password" />
+  <button id="password-submit">Enter</button>
+  <p id="password-error" style="color:red; display:none;">Incorrect password</p>
+</div>
+
+<!-- Wrap ALL existing page content inside this container -->
+<div id="protected-content" style="display:none;">
+  <!-- Your existing content goes here -->
+
+
+
 
 <div class="controls">
   <div>
@@ -359,12 +415,85 @@ footer{margin-top:20px;text-align:center;color:#555;font-size:.82rem}
   <button class="btn" id="collapseAllLanguage">Collapse all</button>
 </div>
 <div id="languageSource"></div>
+</div>
 
-<footer>
-  The code and functionality of this page were created using AI.
+<div class="footer-bar">
+  <footer>
+    The code and functionality of this page were created using AI.
 </footer>
+</div>
+
+
 
 <script>
+
+/* =========================================================
+   Password Protection
+   ========================================================= */
+
+// Remember unlock across sessions (same device + browser)
+(function () {
+  const STORAGE_KEY = 'infield_unlock_v1';
+  const CORRECT_PASSWORD = 'infield-26';
+
+  // Cache elements
+  const passwordScreen   = document.getElementById('password-screen');
+  const protectedContent = document.getElementById('protected-content');
+  const passwordError    = document.getElementById('password-error');
+  const passwordInput    = document.getElementById('password-input');
+  const submitBtn        = document.getElementById('password-submit');
+
+  // Show/hide helpers
+  function showLockedUI() {
+    if (passwordScreen)   passwordScreen.style.display = 'flex';
+    if (protectedContent) protectedContent.style.display = 'none';
+  }
+  function showUnlockedUI() {
+    if (passwordScreen)   passwordScreen.style.display = 'none';
+    if (protectedContent) protectedContent.style.display = 'block';
+    if (passwordError)    passwordError.style.display = 'none';
+    if (passwordInput)    passwordInput.value = '';
+  }
+
+  // Initial state (runs immediately; script is at end of body so elements exist)
+  (function applyInitialLockState() {
+    let unlocked = false;
+    try { unlocked = localStorage.getItem(STORAGE_KEY) === 'true'; } catch (e) {}
+    if (unlocked) showUnlockedUI(); else showLockedUI();
+  })();
+
+  // Unlock flow
+  function unlock() {
+    try { localStorage.setItem(STORAGE_KEY, 'true'); } catch (e) {}
+    showUnlockedUI();
+  }
+
+  function tryUnlock() {
+    const pw = (passwordInput?.value || '').trim();
+    if (pw === CORRECT_PASSWORD) {
+      unlock();
+    } else {
+      if (passwordError) passwordError.style.display = 'block';
+      passwordInput?.focus();
+      passwordInput?.select();
+    }
+  }
+
+  // Wire events
+  submitBtn?.addEventListener('click', tryUnlock);
+  passwordInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') tryUnlock();
+  });
+
+  // Optional: expose a re-lock function (e.g., for a menu item)
+  window.lockContent = function () {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    showLockedUI();
+    setTimeout(() => passwordInput?.focus(), 50);
+  };
+})();
+
+
 /* =========================================================
    CONTENT MAPS — EDIT THESE ONLY
    (Kept intact from your original file)
@@ -1202,6 +1331,7 @@ function refreshAllCompletionDisplays(){
   LANGUAGE_SECTIONS.forEach(sec => { sec.items.forEach(it => updateCompletionDisplays(it.id)); });
 }
 
+
 /* =========================================================
    INIT / REFRESH
    ========================================================= */
@@ -1241,5 +1371,6 @@ init();
 </div>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
 </body>
 </html>
