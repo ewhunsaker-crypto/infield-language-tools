@@ -298,6 +298,50 @@ body {
   padding-bottom: 30px; /* matches footer height */
 }
 
+/* Hide the bottom Study Topic Options section (modal-only now) */
+#sourcesSection { display: none; }
+
+/* Add button layout inside plan boxes */
+.plan-add { display: flex; justify-content: center; margin-top: 8px; }
+
+/* Visuals for the add-open buttons */
+.add-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+  padding: 6px 10px;
+  font-size: 1rem;
+}
+
+/* Icon-only when the box already has items */
+.plan-box:not(.empty) .add-open .label { display: none; }
+.plan-box:not(.empty) .add-open .icon { font-size: 1.2rem; }
+
+/* Larger button with label when empty */
+.plan-box.empty .add-open { padding: 10px 14px; font-weight: 700; }
+.plan-box.empty .add-open .icon { font-size: 1.2rem; }
+
+/* (Optional) tidy space above the add button when items exist */
+.plan-box:not(.empty) .plan-add { margin-top: 6px; }
+
+/* Make modals scroll within the dialog, max 90vh */
+.app-modal__dialog {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+.app-modal__body {
+  overflow: auto;        /* allow scrolling in body */
+  /* preserve your existing padding and font-size already set */
+}
+
+/* Ensure the picker sits beneath confirm dialogs */
+.app-modal--picker { z-index: 900; }  /* default app-modal is 1000 in your file */
+
 
 </style>
 </head>
@@ -354,14 +398,33 @@ body {
   <div class="plan-dates" id="planDates"></div>
 
   <div class="plan-grid">
-    <div class="plan-box green-box">
+    
+    <div id="pmgBox" class="plan-box green-box">
       <h4>Preach My Gospel study section</h4>
       <ul id="planPMG" class="plan-list"></ul>
+
+      <!-- Add button (PMG) -->
+      <div class="plan-add">
+        <button id="addPMG" class="add-open" data-kind="pmg">
+          <span class="icon" aria-hidden="true">+</span>
+          <span class="label">Add Chapter 7 topics</span>
+        </button>
+      </div>
     </div>
-    <div class="plan-box blue-box">
+    
+    <div id="skillBox" class="plan-box blue-box">
       <h4>Language Skills</h4>
       <ul id="planSkills" class="plan-list"></ul>
+
+      <!-- Add button (Skills) -->
+      <div class="plan-add">
+        <button id="addSkill" class="add-open" data-kind="skill">
+          <span class="icon" aria-hidden="true">+</span>
+          <span class="label">Add language skills</span>
+        </button>
+      </div>
     </div>
+
     <div class="plan-box yellow-box">
       <h4>Evaluate Your Language Study</h4>
       <ul id="planEval" class="plan-list"></ul>
@@ -403,25 +466,33 @@ body {
   </div>
 </div>
 
-<hr />
-<h2>Study Topic Options</h2>
-<!-- PMG as an accordion under “Preach My Gospel Study” -->
-<h3>Preach My Gospel Study</h3>
-<div id="pmgSource"></div>
 
-<h3>Language Tasks and Skills</h3>
-<div class="accordion-controls">
-  <button class="btn" id="expandAllLanguage">Expand all</button>
-  <button class="btn" id="collapseAllLanguage">Collapse all</button>
-</div>
-<div id="languageSource"></div>
-</div>
+  <!-- START: Source Section (hidden; used by modal only) -->
+  <div id="sourcesSection">
+    <hr />
+    <h2>Study Topic Options</h2>
 
-<div class="footer-bar">
-  <footer>
-    The code and functionality of this page were created using AI.
-</footer>
-</div>
+    <!-- PMG as an accordion under “Preach My Gospel Study” -->
+    <h3>Preach My Gospel Study</h3>
+    <div id="pmgSource"></div>
+
+    <h3>Language Tasks and Skills</h3>
+    <div class="accordion-controls">
+      <button class="btn" id="expandAllLanguage">Expand all</button>
+      <button class="btn" id="collapseAllLanguage">Collapse all</button>
+    </div>
+    <div id="languageSource"></div>
+    <!-- END: Source Section -->
+  </div>
+</div> <!-- END: Protected Content -->
+
+
+
+  <div class="footer-bar">
+    <footer>
+      The code and functionality of this page were created using AI.
+  </footer>
+  </div>
 
 
 
@@ -833,6 +904,7 @@ function renderPlan(){
   planEval.innerHTML="";
   planEval.appendChild(buildEvalLi());
   refreshAddButtons();
+  refreshAddOpenButtons();
 }
 
 function findItemById(id){
@@ -1066,9 +1138,11 @@ async function addPMGToPlan(topic){
     set.add(topic.id);
     writeSet(getFavKeyPMG(activeWeek), set);
     refreshUI();
+    if (isPickerOpen()) refreshPickerAddButtons(getPickerBody(), 'pmg');
     return;
   }
   // Otherwise, confirm replacement
+  closePicker();
   const ok = await appConfirm(
     `You can only have one study focus in this section. Would you like to change it to "${topic.title}"?`,
     "Replace Study Focus"
@@ -1086,11 +1160,12 @@ async function addPMGToPlan(topic){
   writeObj(getWeekStateKey(activeWeek), state);
 
   refreshUI();
+  if (isPickerOpen()) refreshPickerAddButtons(getPickerBody(), 'pmg');
 }
 
 function addSkillToPlan(item){
   const set = readSet(getFavKeySkill(activeWeek));
-  if (!set.has(item.id)){ set.add(item.id); writeSet(getFavKeySkill(activeWeek), set); refreshUI(); }
+  if (!set.has(item.id)){ set.add(item.id); writeSet(getFavKeySkill(activeWeek), set); refreshUI();if (isPickerOpen()) refreshPickerAddButtons(getPickerBody(), 'skill');}
 }
 
 /* =========================================================
@@ -1333,6 +1408,177 @@ function refreshAllCompletionDisplays(){
 
 
 /* =========================================================
+ ADD PICKER MODAL + ADD BUTTONS
+ ========================================================= */
+
+// --- Helpers to open/close the picker modal
+function openPicker(kind) {
+  const modal   = document.getElementById('pickerModal');
+  const titleEl = document.getElementById('pickerTitle');
+  const bodyEl  = document.getElementById('pickerBody');
+
+  // Reset body
+  bodyEl.innerHTML = '';
+
+  if (kind === 'pmg') {
+    titleEl.textContent = 'Add Chapter 7 topics';
+    renderPMGPicker(bodyEl);
+  } else {
+    titleEl.textContent = 'Add language skills';
+    renderLanguagePicker(bodyEl);
+  }
+
+  // Open modal
+  modal.setAttribute('aria-hidden', 'false');
+
+  // Wire close actions for this open
+  const btnClose  = document.getElementById('pickerClose');
+  const btnX      = modal.querySelector('.app-modal__close');
+  const backdrop  = modal.querySelector('.app-modal__backdrop');
+
+  const close = () => {
+    modal.setAttribute('aria-hidden', 'true');
+    // Cleanup handlers by cloning (same approach you use for app modal)
+    btnClose.replaceWith(btnClose.cloneNode(true));
+    btnX.replaceWith(btnX.cloneNode(true));
+    backdrop.replaceWith(backdrop.cloneNode(true));
+  };
+
+  // Re-query cloned nodes and attach listeners
+  const wire = () => {
+    const cClose   = document.getElementById('pickerClose');
+    const cX       = modal.querySelector('.app-modal__close');
+    const cBackdrop= modal.querySelector('.app-modal__backdrop');
+
+    cClose.addEventListener('click', close);
+    cX.addEventListener('click', close);
+    cBackdrop.addEventListener('click', close);
+
+    // ESC to close
+    modal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+    });
+  };
+  wire();
+}
+
+
+function closePicker() {
+  const modal = document.getElementById('pickerModal');
+  if (modal && modal.getAttribute('aria-hidden') === 'false') {
+    // Simulate clicking Close
+    const btnClose = document.getElementById('pickerClose');
+    if (btnClose) btnClose.click();
+  }
+}
+
+
+function renderPMGPicker(container) {
+  // Flat list of PMG topics, no accordion header
+  const ul = document.createElement('ul');
+  ul.className = 'source-list';
+  PMG_TOPICS.forEach(t => {
+    ul.appendChild(buildSourceLi({ id: t.id, title: t.title, link: t.link }, 'pmg'));
+  });
+  container.appendChild(ul);
+
+  // Disable "+ Add" buttons for items already in this week
+  refreshPickerAddButtons(container, 'pmg');
+  // Sync completion lines
+  refreshAllCompletionDisplays();
+}
+
+function renderLanguagePicker(container) {
+  // Replicate the full Language section with accordions + expand/collapse controls
+  const controls = document.createElement('div');
+  controls.className = 'accordion-controls';
+  controls.innerHTML = `
+    <button class="btn" id="pickerExpand">Expand all</button>
+    <button class="btn" id="pickerCollapse">Collapse all</button>
+  `;
+  container.appendChild(controls);
+
+  const { sectionNum } = buildNumberingMaps();
+
+  LANGUAGE_SECTIONS.forEach(sec => {
+    const sWrap = document.createElement('div');
+    sWrap.className = 'section collapsed'; // collapsed by default
+    sWrap.dataset.sectionId = sec.id;
+
+    const header = document.createElement('div');
+    header.className = 'section-header';
+    header.innerHTML = `<span class="arrow">▶</span><span>${sectionNum.get(sec.id)}. ${sec.title}</span>`;
+    header.addEventListener('click', () => sWrap.classList.toggle('collapsed'));
+    sWrap.appendChild(header);
+
+    const items = document.createElement('ul');
+    items.className = 'section-items source-list';
+
+    sec.items.forEach((it, index) => {
+      const numberedTitle = `${sectionNum.get(sec.id)}.${index+1} ${it.title}`;
+      items.appendChild(buildSourceLi({ id: it.id, title: numberedTitle, link: it.link }, 'skill'));
+    });
+
+    sWrap.appendChild(items);
+    container.appendChild(sWrap);
+  });
+
+  // Wire local expand/collapse for the modal only
+  container.querySelector('#pickerExpand').addEventListener('click', () => {
+    container.querySelectorAll('.section').forEach(sec => sec.classList.remove('collapsed'));
+  });
+  container.querySelector('#pickerCollapse').addEventListener('click', () => {
+    container.querySelectorAll('.section').forEach(sec => sec.classList.add('collapsed'));
+  });
+
+  // Disable "+ Add" buttons for items already in this week
+  refreshPickerAddButtons(container, 'skill');
+  // Sync completion lines
+  refreshAllCompletionDisplays();
+}
+
+function refreshPickerAddButtons(container, kind) {
+  if (kind === 'pmg') {
+    const pmgSet = readSet(getFavKeyPMG(activeWeek));
+    const chosen = pmgSet.values().next().value || null;
+    container.querySelectorAll('li[data-item-id]').forEach(li => {
+      const id = li.dataset.itemId;
+      const btn = li.querySelector('.add-btn');
+      if (btn) btn.disabled = (id === chosen);
+    });
+  } else {
+    const skillSet = readSet(getFavKeySkill(activeWeek));
+    container.querySelectorAll('li[data-item-id]').forEach(li => {
+      const id = li.dataset.itemId;
+      const btn = li.querySelector('.add-btn');
+      if (btn) btn.disabled = skillSet.has(id);
+    });
+  }
+}
+
+// Add-button click handlers (open the picker)
+document.getElementById('addPMG').addEventListener('click', () => openPicker('pmg'));
+document.getElementById('addSkill').addEventListener('click', () => openPicker('skill'));
+
+// Toggle empty/non-empty state for each box (controls button presentation)
+function refreshAddOpenButtons() {
+  const pmgBox   = document.getElementById('pmgBox');
+  const skillBox = document.getElementById('skillBox');
+  if (pmgBox)   pmgBox.classList.toggle('empty',   document.getElementById('planPMG').children.length === 0);
+  if (skillBox) skillBox.classList.toggle('empty', document.getElementById('planSkills').children.length === 0);
+}
+
+// Is the picker currently open?
+function isPickerOpen() {
+  const m = document.getElementById('pickerModal');
+  return m && m.getAttribute('aria-hidden') === 'false';
+}
+// Get the picker body element (where items are rendered)
+function getPickerBody() {
+  return document.getElementById('pickerBody');
+}
+
+/* =========================================================
    INIT / REFRESH
    ========================================================= */
 function refreshUI(){
@@ -1370,6 +1616,23 @@ init();
   </div>
 </div>
 
+
+<!-- Picker Modal (for Add buttons) -->
+<div id="pickerModal" class="app-modal app-modal--picker" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="app-modal__backdrop"></div>
+  <div class="app-modal__dialog" role="document">
+    <div class="app-modal__header">
+      <div class="app-modal__title" id="pickerTitle">Select items</div>
+      <button class="app-modal__close" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="app-modal__body" id="pickerBody"></div>
+    <div class="app-modal__footer">
+      <button class="btn" id="pickerClose" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 </body>
