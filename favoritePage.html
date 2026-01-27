@@ -1,204 +1,200 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Infield Language Program Planning Tool</title>
+
 <style>
-
-/* ===== Passowrd Box styling ===== */
-#password-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
-
-#password-screen input,
-#password-screen button {
-  padding: 10px;
-  font-size: 1rem;
-  margin-top: 10px;
-}
-
-/* ===== Minor utility ===== */
-.accordion-controls {
-  display: flex;
-  gap: 8px;
-  margin: 4px 0 6px;
-}
-
 /* ===== THEME & BASE ===== */
 :root{
   --text:#0f172a; --muted:#6b7280; --border:#cbd5e1; --bg:#ffffff;
   --gray-plan-bg:#f3f4f6;
   --green-border:#298e44; --green-bg:#dff3e6;
-  --blue-border:#027da5;  --blue-bg:#e3f2fd;
-  --yellow-border:#ffb81d;--yellow-bg:#fff4cf;
-  --ok-bg:#22c55e; --ok-bg-hover:#16a34a; --ok-border:#15803d;
+  --blue-border:#027da5; --blue-bg:#e3f2fd;
+  --yellow-border:#ffb81d; --yellow-bg:#fff4cf;
+  --ok-bg:#22c55e; --ok-border:#15803d;
 }
-*{box-sizing:border-box}
+*{ box-sizing:border-box }
+html, body { height:100%; }
 body{
-  margin:12px;background:var(--bg);color:var(--text);
+  margin:12px;
+  background:var(--bg);
+  color:var(--text);
   font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  line-height:1.5;font-size:17.5px;
+  line-height:1.5;
+  font-size:17.5px;
+  padding-bottom:30px; /* for sticky footer */
 }
 h1{margin:0 0 6px 0;font-size:1.8rem}
 h2{margin:18px 0 6px;font-size:1.22rem}
 h3{margin:10px 0 4px;font-size:1.02rem}
 hr{margin:18px 0;border:none;border-top:1px solid var(--border)}
-/* Smaller H1 on small screens */
-@media (max-width:480px){
-  h1{font-size:1.42rem;}
-}
+@media (max-width:480px){ h1{font-size:1.42rem;} }
 
-/* ===== TOP ===== */
+/* ===== GLOBAL BUTTON NORMALIZATION ===== */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:6px 10px;        /* compact; keeps rows tight */
+  line-height:1;           /* prevents extra vertical padding from fonts */
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:#fff;
+  color:var(--text);
+  cursor:pointer;
+  font-size:.95rem;
+  text-decoration:none;
+  white-space:nowrap;
+}
+.btn:hover{ filter:brightness(0.98); }
+
+/* Accent button for primary action (Add Custom Goal) */
+.btn-accent{
+  background:var(--blue-border);
+  border-color:var(--blue-border);
+  color:#fff;              /* makes label visible regardless of theme */
+}
+.btn-accent:hover{ filter:brightness(0.97); }
+
+/* ===== TOP ROW ===== */
 .top-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .notice-line{font-size:.95rem}
-.notice-info{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:.95rem;color:#222
-}
-.notice-info button{
-  border:none;background:transparent;cursor:pointer;
-  font-size:1rem;line-height:1;padding:0 2px;color:#0b6aa5
-}
+.notice-info{ display:inline-flex;align-items:center;gap:6px; font-size:.95rem;color:#222 }
+.notice-info button{ border:none;background:transparent;cursor:pointer; font-size:1rem;line-height:1;padding:0 2px;color:#0b6aa5 }
 .notice-pop{
-  position:fixed; /* fixed so we can use viewport coords */
-  width: 700px; max-width:90vw; background:#fff; border:1px solid var(--border);
+  position:fixed; width: 700px; max-width:90vw; background:#fff; border:1px solid var(--border);
   border-radius:8px; padding:10px 12px; box-shadow:0 8px 24px rgba(0,0,0,.12);
   font-size:.95rem; z-index:20; display:none;
 }
 .notice-pop.show{display:block}
 
-/* top controls */
+/* ===== PASSWORD SCREEN ===== */
+#password-screen{
+  display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh;
+}
+#password-screen input, #password-screen button{
+  padding:10px; font-size:1rem; margin-top:10px;
+}
+
+/* ===== PAGE CONTROLS (WEEK/DATE) ===== */
 .controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-bottom:12px}
 .controls label{font-weight:600;font-size:.9rem}
 .controls select,.controls input[type="date"]{
   padding:6px 8px;font-size:.95rem;border-radius:6px;border:1px solid var(--border)
 }
 
-/* ===== PLAN ===== */
-.plan-wrapper{
-  border:2px solid #000;background:var(--gray-plan-bg);
-  border-radius:10px;padding:10px;margin-bottom:14px
-}
+/* ===== PLAN WRAPPER ===== */
+.plan-wrapper{ border:2px solid #000;background:var(--gray-plan-bg); border-radius:10px;padding:10px;margin-bottom:14px }
 .plan-title{font-weight:800;font-size:1.05rem}
 .plan-dates{color:var(--muted);margin-top:1px;margin-bottom:6px;font-size:.9rem}
+
+/* ===== DESKTOP GRID ===== */
 .plan-grid{display:grid;grid-template-columns:1fr;gap:8px}
+@media (min-width:800px){
+  .plan-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "pmg pmg"
+      "skill skillLong"
+      "eval eval";
+    gap:8px;
+  }
+  #pmgBox{ grid-area: pmg; }
+  #skillBox{ grid-area: skill; }
+  #skillBoxLong{ grid-area: skillLong; }
+  #evalBox{ grid-area: eval; }
+}
+
+/* ===== PLAN BOXES ===== */
 .plan-box{border-radius:9px;padding:8px}
 .plan-box h4{margin:0 0 2px;font-size:.97rem}
-.green-box{border:2px solid var(--green-border);background:var(--green-bg)}
-.blue-box{ border:2px solid var(--blue-border); background:var(--blue-bg)}
-.yellow-box{border:2px solid var(--yellow-border);background:var(--yellow-bg)}
+.green-box{ border:2px solid var(--green-border);  background:var(--green-bg) }
+.blue-box { border:2px solid var(--blue-border);   background:var(--blue-bg) }
+.yellow-box{border:2px solid var(--yellow-border); background:var(--yellow-bg)}
 .plan-list{list-style:none;padding-left:0;margin:0}
 
-/* ===== CARDS (compact) ===== */
+/* Header row inside each plan box */
+.plan-header{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+}
+.plan-box.empty .plan-header{ flex-direction:column; align-items:center; }
+.plan-box.empty .plan-header h4{ margin-bottom:6px; }
+
+/* Add button look in plan boxes */
+.add-open{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 10px; font-size:1rem; line-height:1.1;
+  border:0px solid var(--border); border-radius:8px; background:#fff; cursor:pointer;
+}
+.add-open .icon{ font-size:1.1rem; }
+.plan-box:not(.empty) .add-open .label{ display:none; }
+.plan-box:not(.empty) .add-open .icon{ font-size:2rem; line-height:1; }
+.plan-box.empty .add-open{ padding:10px 14px; font-weight:700; }
+.add-open.add-text{ background:transparent; border-color:currentColor; }
+.green-box .add-open.add-text{ color:var(--green-border); }
+.blue-box  .add-open.add-text{ color:var(--blue-border); }
+.add-open:hover{ filter:brightness(0.97); }
+
+/* ===== CARDS ===== */
 .card{
-  background:#fff;border:1px solid var(--border);border-radius:10px;
-  padding:10px 12px;margin:8px 0;box-shadow:0 1px 2px rgba(0,0,0,.05)
+  background:#fff; border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; margin:8px 0; box-shadow:0 1px 2px rgba(0,0,0,.05);
 }
-/* top row: remove (left) + circle-check + number/title + right actions (link + move) */
 .card-row{display:flex;gap:6px}
-.card-row.top{align-items:flex-start} /* top-align row so circle/number hug first line */
+.card-row.top{align-items:flex-start}
 .card-title{display:flex;align-items:flex-start;gap:6px;flex:1;min-width:0}
-.card-title .card-num{
-  font-weight:400; /* un-bold number */
-  font-size:.92rem;white-space:nowrap;line-height:1.1;
-}
-.card-title .card-title-text{
-  font-weight:400;font-size:.9rem;line-height:1.25;white-space:normal;word-break:break-word
-}
-/* left actions: keep remove vertically centered within its own group */
+.card-title .card-num{ font-weight:400; font-size:.92rem; white-space:nowrap; line-height:1.1; }
+.card-title .card-title-text{ font-weight:400; font-size:.9rem; line-height:1.25; white-space:normal; word-break:break-word }
 .card-actions-left{display:flex;gap:6px;align-items:center}
 .right-actions{display:flex;align-items:flex-start;gap:8px}
 
 /* completion line */
 .completion-line{color:var(--muted);font-size:.8rem;width:100%;margin-top:3px}
 
-/* Buttons compact */
-.add-btn,.remove-btn,.move-next,.btn{
-  padding:8px 12px;border-radius:8px;border:1px solid var(--border);
-  background:#fff;cursor:pointer;font-size:.95rem;line-height:1.1;
+/* small buttons in cards */
+.add-btn,.remove-btn,.move-next{
+  padding:6px 10px; line-height:1; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; font-size:.95rem;
 }
-.add-btn{padding:2px 7px}
-.remove-btn{padding:2px 7px}
-
-/* Disabled state for Previous / Next week buttons */
-.nav-btn:disabled{opacity:0.35;cursor:not-allowed}
-.nav-btn:disabled .arrow,.nav-btn:disabled .label{opacity:0.35}
-
-/* disable add when already in plan */
-.add-btn:disabled{opacity:.5;background:#f2f2f2;cursor:not-allowed}
+.add-btn{ padding:2px 7px }
+.remove-btn{ padding:2px 7px }
 
 /* ext link only visible in plan; small & snug */
 .ext-link{display:none;text-decoration:none;font-size:1.05rem;line-height:1}
 .in-plan .ext-link{display:inline-flex}
 
-/* icon-only move/repeat, no border */
+/* icon-only move/repeat */
 .move-next{
   background:transparent;border:none;min-width:24px;height:24px;
-  display:inline-flex;align-items:center;justify-content:center;color:#111;padding:0
+  display:inline-flex;align-items:center;justify-content:center;color:#111;padding:0;font-size:1.2rem
 }
 .move-next:hover{color:#0b6aa5}
-.move-next:disabled{opacity:.45;cursor:not-allowed}
-.move-next{font-size:1.2rem}
 .move-next.is-repeat{font-size:1.45rem}
 
-/* Circle checkbox (unchecked = outline circle; checked = filled green w/ check) */
+/* circle checkbox */
 .circle-check{
   width:20px;height:20px;min-width:20px;min-height:20px;border-radius:50%;
   border:2px solid #9ca3af;background:#fff;display:inline-flex;align-items:center;justify-content:center;
-  cursor:pointer;line-height:1;font-size:.9rem;color:#fff;
-  align-self:flex-start; /* ensure it hugs the top */
+  cursor:pointer;line-height:1;font-size:.9rem;color:#fff; align-self:flex-start;
 }
-.circle-check[aria-checked="true"]{
-  background:var(--ok-bg); border-color:var(--ok-border);
-}
+.circle-check[aria-checked="true"]{ background:var(--ok-bg); border-color:var(--ok-border); }
 .circle-check .mark{display:none}
 .circle-check[aria-checked="true"] .mark{display:block}
-
-/* completed style */
-.completed .card-title-text{text-decoration:line-through;color:var(--muted)}
+.completed .card-title-text{ text-decoration:line-through; color:var(--muted) }
 
 /* ===== PLAN ACTIONS ===== */
-/* Plan actions laid out as Left | Center | Right */
-.plan-actions{
-  display:grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items:center;
-  gap:6px;
-  margin-top:6px;
-}
-/* Positioning “zones” */
-.actions-left{ justify-self:start; }
+.plan-actions{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:6px; margin-top:6px; }
+.actions-left { justify-self:start; }
 .actions-center{ justify-self:center; display:flex; gap:6px; flex-wrap:wrap; }
 .actions-right{ justify-self:end; }
-/* Prev/Next buttons: bold label + arrow */
-.nav-btn{
-  font-weight:800;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-}
-/* Arrow styling */
-.nav-btn .arrow{
-  font-weight:800;
-  line-height:1;
-}
-/* Small screens: show only the arrows on prev/next and icons in center */
-@media (max-width: 520px){
-  .nav-btn .label, .icon-btn .label{ display:none; }
-}
-
-/* ===== STICKY MINI ===== */
-.sticky-mini{
-  display:none;position:sticky;top:0;background:var(--gray-plan-bg);
-  padding:6px 10px;border-bottom:2px solid #000;font-weight:700;cursor:pointer;z-index:10
-}
-.sticky-mini.show{display:block}
+.nav-btn{ font-weight:800; display:inline-flex; align-items:center; gap:6px; }
+.nav-btn .arrow{ font-weight:800; line-height:1; }
+.nav-btn:disabled{ opacity:.35; cursor:not-allowed; }
+.nav-btn:disabled .arrow, .nav-btn:disabled .label{ opacity:.35; }
+@media (max-width:520px){ .nav-btn .label, .icon-btn .label{ display:none; } }
 
 /* ===== ACCORDIONS ===== */
 .section{margin-bottom:8px;border-bottom:1px dashed var(--border);padding-bottom:6px}
@@ -211,310 +207,234 @@ hr{margin:18px 0;border:none;border-top:1px solid var(--border)}
 .source-list{list-style:none;margin:0;padding:0}
 .source-list .card{padding:6px 8px;margin:5px 0}
 
-/* ===== FOOTER ===== */
-footer{text-align:center;font-size:.82rem}
-
-/* ===== RESPONSIVE ===== */
-@media (min-width:800px){ .plan-grid{grid-template-columns:1fr 1fr 1fr} }
-
-/* ===== App Modal (custom alert/confirm) ===== */
-.app-modal[aria-hidden="true"]{ display: none; }
-.app-modal {
-  position: fixed; inset: 0; z-index: 1000;
-  display: grid; place-items: center;
+/* ===== MODALS (APP / PICKER / CUSTOM GOAL) ===== */
+.app-modal[aria-hidden="true"]{ display:none; }
+.app-modal{
+  position:fixed; inset:0; z-index:1000; display:grid; place-items:center;
 }
-.app-modal__backdrop {
-  position: absolute; inset: 0; background: rgba(0,0,0,.35);
+.app-modal__backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.35); }
+.app-modal__dialog{
+  position:relative; width:min(700px,90vw); background:#fff; border:1px solid var(--border);
+  border-radius:10px; box-shadow:0 12px 36px rgba(0,0,0,.22); overflow:hidden;
+  max-height:90vh; display:flex; flex-direction:column;
 }
-.app-modal__dialog {
-  position: relative; width: min(700px, 90vw);
-  background: #fff; border: 1px solid var(--border);
-  border-radius: 10px; box-shadow: 0 12px 36px rgba(0,0,0,.22);
-  overflow: hidden;
-}
-.app-modal__header {
+.app-modal__header{
   display:flex; align-items:center; justify-content:space-between;
-  padding:10px 12px; background: var(--gray-plan-bg); border-bottom:1px solid var(--border);
+  padding:10px 12px; background:var(--gray-plan-bg); border-bottom:1px solid var(--border);
 }
-.app-modal__title { font-weight:800; }
-.app-modal__close {
-  border:none; background:transparent; font-size:1.2rem; cursor:pointer; line-height:1;
-}
-.app-modal__body { padding:14px 12px; font-size:.97rem; color:#111; white-space: pre-line;}
-.app-modal__footer {
-  display:flex; gap:8px; justify-content:flex-end; padding:10px 12px; border-top:1px solid var(--border);
-}
-@media (max-width: 520px){
-  .app-modal__dialog { width: min(480px, 94vw); }
-}
+.app-modal__title{ font-weight:800; }
+.app-modal__close{ border:none; background:transparent; font-size:1.2rem; cursor:pointer; line-height:1; }
 
-/* ===== Toast ===== */
+/* KEY: body has no padding so the toolbar can be tight; content gets padding */
+.app-modal__body{
+  padding:0;                 /* <-- remove vertical gaps around toolbar */
+  font-size:.97rem; color:#111; white-space:pre-line; overflow:auto;
+}
+.app-modal__footer{ display:flex; gap:8px; justify-content:flex-end; padding:10px 12px; border-top:1px solid var(--border); }
+@media (max-width:520px){ .app-modal__dialog{ width:min(480px,94vw); } }
+
+/* Picker sits beneath confirm dialogs; custom-goal sits above */
+.app-modal--picker{ z-index:900; }
+.app-modal--customgoal{ z-index:1100; }
+.app-modal--customgoal .app-modal__dialog{ width:min(520px,92vw); }
+
+/* ===== PICKER TOOLBAR (tight, aligned, visible) ===== */
+#pickerToolbar{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:6px;
+  margin:0;
+  padding:8px 12px;
+  border-bottom:1px solid var(--border);
+  background:#fff;
+}
+#pickerToolbar .left,
+#pickerToolbar .right{
+  display:flex; align-items:center;
+}
+#pickerToolbar .right{ margin-left:auto; }
+#pickerToolbar .btn{ padding:6px 10px; line-height:1; } /* ensure exact height */
+
+/* Content area beneath toolbar gets the space */
+#pickerContent{ padding:12px; }
+
+/* ===== TOAST ===== */
 .toast{
-  position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #111;
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: .9rem;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .2s ease, transform .2s ease;
-  z-index: 1200;
+  position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+  background:#111; color:#fff; padding:10px 14px; border-radius:8px; font-size:.9rem;
+  opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:1200;
 }
-.toast.show{
-  opacity: 0.95;
-  transform: translateX(-50%) translateY(0);
-}
-@media (max-width: 520px){
-  .toast{
-    width: calc(100vw - 24px);
-    text-align: center;
-  }
+.toast.show{ opacity:.95; transform:translateX(-50%) translateY(0); }
+@media (max-width:520px){ .toast{ width:calc(100vw - 24px); text-align:center; } }
+
+/* ===== STICKY FOOTER BAR ===== */
+.footer-bar{
+  position:fixed; bottom:0; left:0; width:100%; height:30px;
+  background-color:#003366; color:#fff; display:flex; align-items:center; justify-content:center;
+  z-index:1000;
 }
 
-/* Sticky footer bar */
-.footer-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 30px;
-
-  background-color: #003366; /* dark blue */
-  color: white;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  z-index: 1000; /* Ensure it stays above content */
+/* ===== HIDE THE BOTTOM STUDY TOPIC OPTIONS (picker-only) ===== */
+#sourcesSection{
+  display:none !important;
+  visibility:hidden !important;
 }
-
-/* Prevent footer from covering content */
-body {
-  padding-bottom: 30px; /* matches footer height */
-}
-
-/* Hide the bottom Study Topic Options section (modal-only now) */
-#sourcesSection { display: none; }
-
-/* Add button layout inside plan boxes */
-.plan-add { display: flex; justify-content: center; margin-top: 8px; }
-
-/* Visuals for the add-open buttons */
-.add-open {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: #fff;
-  cursor: pointer;
-  padding: 6px 10px;
-  font-size: 1rem;
-}
-
-/* Icon-only when the box already has items */
-.plan-box:not(.empty) .add-open .label { display: none; }
-.plan-box:not(.empty) .add-open .icon { font-size: 1.2rem; }
-
-/* Larger button with label when empty */
-.plan-box.empty .add-open { padding: 10px 14px; font-weight: 700; }
-.plan-box.empty .add-open .icon { font-size: 1.2rem; }
-
-/* (Optional) tidy space above the add button when items exist */
-.plan-box:not(.empty) .plan-add { margin-top: 6px; }
-
-/* Make modals scroll within the dialog, max 90vh */
-.app-modal__dialog {
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-}
-.app-modal__body {
-  overflow: auto;        /* allow scrolling in body */
-  /* preserve your existing padding and font-size already set */
-}
-
-/* Ensure the picker sits beneath confirm dialogs */
-.app-modal--picker { z-index: 900; }  /* default app-modal is 1000 in your file */
-
-
 </style>
 </head>
 <body>
-
   <div class="top-row">
-  <h1>Infield Language Program Planning Tool</h1>
-  <!-- Option C: one-line microcopy + info button with a tiny popover -->
-  <div class="notice-info" style="position:relative;">
-    <span class="notice-line">Data stays on this device.</span>
-    <button id="noticeBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="noticePop" title="More info">ⓘ</button>
-    <div id="noticePop" class="notice-pop" role="dialog" aria-modal="false" aria-labelledby="noticeTitle">
-      <strong id="noticeTitle">How your data is saved</strong>
-      <p style="margin:.35rem 0 0;">
-        Your data is saved only in your browser on this device. To avoid losing it,
-        use the same browser and don’t clear your cache. Consider copying or writing down
-        your language study plan each week as a backup.
-      </p>
-    </div>
-  </div>
-</div>
-
-<!-- Password Box -->
-<div id="password-screen">
-  <h2>Please enter the password</h2>
-  <input type="text" id="password-input" placeholder="Password" />
-  <button id="password-submit">Enter</button>
-  <p id="password-error" style="color:red; display:none;">Incorrect password</p>
-</div>
-
-<!-- Wrap ALL existing page content inside this container -->
-<div id="protected-content" style="display:none;">
-  <!-- Your existing content goes here -->
-
-
-
-
-<div class="controls">
-  <div>
-    <label for="week-select">Week</label><br/>
-    <select id="week-select"></select>
-  </div>
-  <div>
-    <label for="entry-date">Infield Entry Date</label><br/>
-    <input type="date" id="entry-date"/>
-  </div>
-</div>
-
-<!-- Sticky shows week number -->
-<div id="stickyMini" class="sticky-mini">→ Week 1 Study Plan</div>
-
-<div id="planWrapper" class="plan-wrapper">
-  <div class="plan-title" id="planTitle"></div>
-  <div class="plan-dates" id="planDates"></div>
-
-  <div class="plan-grid">
-    
-    <div id="pmgBox" class="plan-box green-box">
-      <h4>Preach My Gospel study section</h4>
-      <ul id="planPMG" class="plan-list"></ul>
-
-      <!-- Add button (PMG) -->
-      <div class="plan-add">
-        <button id="addPMG" class="add-open" data-kind="pmg">
-          <span class="icon" aria-hidden="true">+</span>
-          <span class="label">Add Chapter 7 topics</span>
-        </button>
+    <h1>Infield Language Program Planning Tool</h1>
+    <div class="notice-info" style="position:relative;">
+      <span class="notice-line">Data stays on this device.</span>
+      <button id="noticeBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="noticePop" title="More info">ⓘ</button>
+      <div id="noticePop" class="notice-pop" role="dialog" aria-modal="false" aria-labelledby="noticeTitle">
+        <strong id="noticeTitle">How your data is saved</strong>
+        <p style="margin:.35rem 0 0;">
+          Your data is saved only in your browser on this device. To avoid losing it,
+          use the same browser and don’t clear your cache. Consider copying or writing down
+          your language study plan each week as a backup.
+        </p>
       </div>
     </div>
-    
-    <div id="skillBox" class="plan-box blue-box">
-      <h4>Language Skills</h4>
-      <ul id="planSkills" class="plan-list"></ul>
+  </div>
 
-      <!-- Add button (Skills) -->
-      <div class="plan-add">
-        <button id="addSkill" class="add-open" data-kind="skill">
-          <span class="icon" aria-hidden="true">+</span>
-          <span class="label">Add language skills</span>
-        </button>
+  <!-- Password Box -->
+  <div id="password-screen">
+    <h2>Please enter the password</h2>
+    <input type="text" id="password-input" placeholder="Password" />
+    <button id="password-submit">Enter</button>
+    <p id="password-error" style="color:red; display:none;">Incorrect password</p>
+  </div>
+
+  <!-- Protected content -->
+  <div id="protected-content" style="display:none;">
+    <div class="controls">
+      <div>
+        <label for="week-select">Week</label><br/>
+        <select id="week-select"></select>
+      </div>
+      <div>
+        <label for="entry-date">Infield Entry Date</label><br/>
+        <input type="date" id="entry-date"/>
       </div>
     </div>
 
-    <div class="plan-box yellow-box">
-      <h4>Evaluate Your Language Study</h4>
-      <ul id="planEval" class="plan-list"></ul>
+    <div id="planWrapper" class="plan-wrapper">
+      <div class="plan-title" id="planTitle"></div>
+      <div class="plan-dates" id="planDates"></div>
+      <div class="plan-grid">
+
+        <div id="pmgBox" class="plan-box green-box">
+          <div class="plan-header">
+            <h4 style="text-align: left;"><em>Preach My Gospel</em> Chapter 7 Topics</h4>
+            <button id="addPMG" class="add-open add-text" data-kind="pmg">
+              <span class="icon" aria-hidden="true">+</span>
+              <span class="label">Add Chapter 7 topics</span>
+            </button>
+          </div>
+          <ul id="planPMG" class="plan-list"></ul>
+        </div>
+
+        <div id="skillBox" class="plan-box blue-box">
+          <div class="plan-header">
+            <h4>Short-Term Language Skills</h4>
+            <button id="addSkill" class="add-open add-text" data-kind="skill">
+              <span class="icon" aria-hidden="true">+</span>
+              <span class="label">Add short-term goals</span>
+            </button>
+          </div>
+          <ul id="planSkills" class="plan-list"></ul>
+        </div>
+
+        <div id="skillBoxLong" class="plan-box blue-box">
+          <div class="plan-header">
+            <h4>Long-Term Language Skills</h4>
+            <button id="addSkillLong" class="add-open add-text" data-kind="skillLong">
+              <span class="icon" aria-hidden="true">+</span>
+              <span class="label">Add long-term goals</span>
+            </button>
+          </div>
+          <ul id="planSkillsLong" class="plan-list"></ul>
+        </div>
+
+        <div id="evalBox" class="plan-box yellow-box">
+          <h4>Evaluate Your Language Study</h4>
+          <ul id="planEval" class="plan-list"></ul>
+        </div>
+      </div>
+
+      <div class="plan-actions">
+        <!-- Left: Previous Week -->
+        <div class="actions-left">
+          <button class="btn nav-btn prev" id="prevWeek" aria-label="Previous Week">
+            <span class="arrow" aria-hidden="true">←</span>
+            <span class="label">Previous Week</span>
+          </button>
+        </div>
+
+        <!-- Center: Clear Week • Copy Plan • Clear All -->
+        <div class="actions-center">
+          <button class="btn icon-btn" id="clearWeek">
+            <span class="icon" aria-hidden="true">🧹</span>
+            <span class="label">Clear Week</span>
+          </button>
+          <button class="btn icon-btn" id="copyPlan">
+            <span class="icon" aria-hidden="true">⧉</span>
+            <span class="label">Copy Plan</span>
+          </button>
+          <button class="btn icon-btn" id="clearAll">
+            <span class="icon" aria-hidden="true">🗑</span>
+            <span class="label">Clear All</span>
+          </button>
+        </div>
+
+        <!-- Right: Next Week -->
+        <div class="actions-right">
+          <button class="btn nav-btn next" id="nextWeek" aria-label="Next Week">
+            <span class="label">Next Week</span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="plan-actions">
-    <!-- Left: Previous Week -->
-    <div class="actions-left">
-      <button class="btn nav-btn prev" id="prevWeek" aria-label="Previous Week">
-        <span class="arrow" aria-hidden="true">←</span>
-        <span class="label">Previous Week</span>
-      </button>
+    <!-- START: Source Section (hidden; used by modal only) -->
+    <div id="sourcesSection" style="display:none" aria-hidden="true">
+      <hr />
+      <h2>Study Topic Options</h2>
+
+      <!-- PMG -->
+      <h3>Preach My Gospel Study</h3>
+      <div id="pmgSource"></div>
+
+      <!-- Language -->
+      <h3>Language Tasks and Skills</h3>
+      <div class="accordion-controls">
+        <button class="btn" id="expandAllLanguage">Expand all</button>
+        <button class="btn" id="collapseAllLanguage">Collapse all</button>
+      </div>
+      <div id="languageSource"></div>
     </div>
-
-    <!-- Center: Clear Week • Copy Plan • Clear All (new order) -->
-    <div class="actions-center">
-      <button class="btn icon-btn" id="clearWeek">
-        <span class="icon" aria-hidden="true">🧹</span>
-        <span class="label">Clear Week</span>
-      </button>
-      <button class="btn icon-btn" id="copyPlan">
-        <span class="icon" aria-hidden="true">⧉</span>
-        <span class="label">Copy Plan</span>
-      </button>
-      <button class="btn icon-btn" id="clearAll">
-        <span class="icon" aria-hidden="true">🗑</span>
-        <span class="label">Clear All</span>
-      </button>
-    </div>
-
-    <!-- Right: Next Week -->
-    <div class="actions-right">
-      <button class="btn nav-btn next" id="nextWeek" aria-label="Next Week">
-        <span class="label">Next Week</span>
-        <span class="arrow" aria-hidden="true">→</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-
-  <!-- START: Source Section (hidden; used by modal only) -->
-  <div id="sourcesSection">
-    <hr />
-    <h2>Study Topic Options</h2>
-
-    <!-- PMG as an accordion under “Preach My Gospel Study” -->
-    <h3>Preach My Gospel Study</h3>
-    <div id="pmgSource"></div>
-
-    <h3>Language Tasks and Skills</h3>
-    <div class="accordion-controls">
-      <button class="btn" id="expandAllLanguage">Expand all</button>
-      <button class="btn" id="collapseAllLanguage">Collapse all</button>
-    </div>
-    <div id="languageSource"></div>
     <!-- END: Source Section -->
-  </div>
-</div> <!-- END: Protected Content -->
-
-
+  </div> <!-- END: protected-content -->
 
   <div class="footer-bar">
-    <footer>
-      The code and functionality of this page were created using AI.
-  </footer>
+    <footer>The code and functionality of this page were created using AI.</footer>
   </div>
 
-
-
 <script>
-
 /* =========================================================
-   Password Protection
-   ========================================================= */
-
-// Remember unlock across sessions (same device + browser)
+ Password Protection
+========================================================= */
 (function () {
   const STORAGE_KEY = 'infield_unlock_v1';
   const CORRECT_PASSWORD = 'infield-26';
 
-  // Cache elements
   const passwordScreen   = document.getElementById('password-screen');
   const protectedContent = document.getElementById('protected-content');
   const passwordError    = document.getElementById('password-error');
   const passwordInput    = document.getElementById('password-input');
   const submitBtn        = document.getElementById('password-submit');
 
-  // Show/hide helpers
   function showLockedUI() {
     if (passwordScreen)   passwordScreen.style.display = 'flex';
     if (protectedContent) protectedContent.style.display = 'none';
@@ -526,54 +446,41 @@ body {
     if (passwordInput)    passwordInput.value = '';
   }
 
-  // Initial state (runs immediately; script is at end of body so elements exist)
   (function applyInitialLockState() {
     let unlocked = false;
     try { unlocked = localStorage.getItem(STORAGE_KEY) === 'true'; } catch (e) {}
     if (unlocked) showUnlockedUI(); else showLockedUI();
   })();
 
-  // Unlock flow
   function unlock() {
     try { localStorage.setItem(STORAGE_KEY, 'true'); } catch (e) {}
     showUnlockedUI();
   }
-
   function tryUnlock() {
-    const pw = (passwordInput?.value || '').trim();
-    if (pw === CORRECT_PASSWORD) {
-      unlock();
-    } else {
+    const pw = (passwordInput?.value ?? '').trim();
+    if (pw === CORRECT_PASSWORD) unlock();
+    else {
       if (passwordError) passwordError.style.display = 'block';
-      passwordInput?.focus();
-      passwordInput?.select();
+      passwordInput?.focus(); passwordInput?.select();
     }
   }
-
-  // Wire events
   submitBtn?.addEventListener('click', tryUnlock);
-  passwordInput?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') tryUnlock();
-  });
+  passwordInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryUnlock(); });
 
-  // Optional: expose a re-lock function (e.g., for a menu item)
   window.lockContent = function () {
     try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-    showLockedUI();
-    setTimeout(() => passwordInput?.focus(), 50);
+    showLockedUI(); setTimeout(() => passwordInput?.focus(), 50);
   };
 })();
 
-
 /* =========================================================
-   CONTENT MAPS — EDIT THESE ONLY
-   (Kept intact from your original file)
-   ========================================================= */
+ CONTENT MAPS — EDIT THESE ONLY
+========================================================= */
 // PMG Topics (green box source)
 const PMG_TOPICS = [
   { id: "pmg1", title: "Prepare Yourself Spiritually", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title3-p7#title3" },
   { id: "pmg2", title: "Be Dedicated and Diligent", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title4-p14#title4" },
-  { id: "pmg3", title: "Principles of Language Learning", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title6-p21#title6" },
+  { id: "pmg3", title: "Principles of Language Learning", link: "https://www.churchofjesusch.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title6-p21#title6" },
   { id: "pmg4", title: "Create a Language Study Plan", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title12-p35#title12" },
   { id: "pmg5", title: "Learn with Your Companions", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title14-figure4_p3#title14" },
   { id: "pmg6", title: "Culture and Language Learning", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title16-figure5_p2#title16" },
@@ -581,133 +488,149 @@ const PMG_TOPICS = [
   { id: "pmg8", title: "Ideas for Study and Application: Personal Study", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=title19-aside2_p2#title19" },
   { id: "pmg9", title: "Ideas for Study and Application: Companion Study and Companion Exchange", link: "https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=aside2_title3-aside2_p7#aside2_title3" }
 ];
-
-// Language sections (blue box source + accordions) — full structure
+// Language sections (blue) — short-term (numbered in plan)
 const LANGUAGE_SECTIONS = [
-  { id:"lesson1", title:"Lesson 1: The Message of the Restoration",
-    items:[ { id:"item1", title:"Lesson 1: The Message of the Restoration", link:"#"} ] },
-  { id:"lesson2", title:"Lesson 2: Heavenly Father’s Plan of Salvation",
-    items:[ { id:"item2", title:"Lesson 2: Heavenly Father’s Plan of Salvation", link:"#"} ] },
-  { id:"lesson3", title:"Lesson 3: The Gospel of Jesus Christ",
-    items:[ { id:"item3", title:"Lesson 3: The Gospel of Jesus Christ", link:"#"} ] },
+  { id:"lesson1", title:"Lesson 1: The Message of the Restoration", items:[ { id:"item1", title:"Lesson 1: The Message of the Restoration", link:"#"} ] },
+  { id:"lesson2", title:"Lesson 2: Heavenly Father’s Plan of Salvation", items:[ { id:"item2", title:"Lesson 2: Heavenly Father’s Plan of Salvation", link:"#"} ] },
+  { id:"lesson3", title:"Lesson 3: The Gospel of Jesus Christ", items:[ { id:"item3", title:"Lesson 3: The Gospel of Jesus Christ", link:"#"} ] },
   { id:"pray-faith", title:"Pray with Faith in Jesus Christ",
     items:[
-      { id:"item4", title:"“Pray for those you are teaching.” (105)", link:"#"},
-      { id:"item5", title:"“Pray simply and sincerely that God will bless the people you are teaching” (181)", link:"#"},
-      { id:"item6", title:"“As needed, teach the person how to pray” (72)", link:"#"}
-  ]},
+      { id:"item4",  title:"“Pray for those you are teaching.” (105)", link:"#"},
+      { id:"item5",  title:"“Pray simply and sincerely that God will bless the people you are teaching” (181)", link:"#"},
+      { id:"item6",  title:"“As needed, teach the person how to pray” (72)", link:"#"}
+    ]},
   { id:"talk-everyone", title:"Talk with Everyone",
     items:[
-      { id:"item7", title:"“Ask a question and listen to their response” (166)", link:"#"},
-      { id:"item8", title:"“Ask about their families. Help them see how the restored gospel can bless their families.” (166)", link:"#"},
-      { id:"item9", title:"“Share with them your purpose as a missionary and why you decided to serve a mission.” (166)", link:"#"}
-  ]},
+      { id:"item7",  title:"“Ask a question and listen to their response” (166)", link:"#"},
+      { id:"item8",  title:"“Ask about their families. Help them see how the restored gospel can bless their families.” (166)", link:"#"},
+      { id:"item9",  title:"“Share with them your purpose as a missionary and why you decided to serve a mission.” (166)", link:"#"}
+    ]},
   { id:"unite-members", title:"Unite with Members",
     items:[
       { id:"item10", title:"“Build Strong Relationships with Local Leaders” (167)", link:"#"},
       { id:"item11", title:"“Support Members in Their Efforts to Share the Gospel” (168)", link:"#"},
       { id:"item12", title:"“Promise Blessings for Sharing the Gospel” (169)", link:"#"}
-  ]},
+    ]},
   { id:"find-people", title:"Find People Where They Are",
     items:[
       { id:"item13", title:"“Find out what is most important to them” (171)", link:"#"},
       { id:"item14", title:"Seek to understand others’ interests (171)", link:"#"},
       { id:"item15", title:"Discuss challenges people face (171)", link:"#"}
-  ]},
+    ]},
   { id:"invite-spirit", title:"Invite the Spirit as You Begin Teaching",
     items:[
       { id:"item16", title:"“Ask a few simple questions to help you understand their background and their expectations” (181)", link:"#"},
       { id:"item17", title:"“Explain that you would like to begin and end each lesson with prayer.” (181)", link:"#"},
       { id:"item18", title:"“Give a simple overview of what you will teach.” (182)", link:"#"}
-  ]},
+    ]},
   { id:"use-scriptures", title:"Use the Scriptures",
     items:[
       { id:"item19", title:"“Introduce the Scripture” (183)", link:"#"},
       { id:"item20", title:"“Apply the Scriptures” (183)", link:"#"},
       { id:"item21", title:"“Invite and Help People to Read on Their Own” (183)", link:"#"}
-  ]},
+    ]},
   { id:"share-testimony-1", title:"Share Your Testimony (Part 1)",
     items:[
       { id:"item22", title:"“Share a brief experience about how you gained this testimony.” (185)", link:"#"},
       { id:"item23", title:"“When your companion is teaching, share your testimony to provide a second witness” (185)", link:"#"},
       { id:"item24", title:"“Share your testimony that the principle you are teaching will bless the person’s life if he or she will follow it.” (185)", link:"#"}
-  ]},
+    ]},
   { id:"teach-understanding", title:"Teach for Understanding",
     items:[
       { id:"item25", title:"“Ask questions to help people think about what you have taught.” (189)", link:"#"},
       { id:"item26", title:"“Explain words, phrases, and ideas.” (189)", link:"#"},
       { id:"item27", title:"“Keep your teaching simple and brief.” (189)", link:"#"}
-  ]},
+    ]},
   { id:"ask-questions", title:"Ask Questions",
     items:[
       { id:"item28", title:"“Ask questions that help people feel the Spirit.” (190)", link:"#"},
       { id:"item29", title:"“Ask questions that help you know how well people understand what you are teaching.” (190)", link:"#"},
       { id:"item30", title:"“Ask questions that help people apply what they learn.” (191)", link:"#"}
-  ]},
+    ]},
   { id:"extend-invitations", title:"Extend Invitations",
     items:[
       { id:"item31", title:"“Invite with kind and clear language:” Church (203)", link:"#"},
       { id:"item32", title:"“Invite with kind and clear language:” Baptism (203)", link:"#"},
       { id:"item33", title:"“Invite with kind and clear language:” Read the scriptures (203)", link:"#"}
-  ]},
+    ]},
   { id:"promise-blessings", title:"Promise People Blessings",
     items:[
       { id:"item34", title:"“Prayerfully decide what blessings to promise each person as you extend invitations.” (204)", link:"#"},
       { id:"item35", title:"“Assure [those you teach] that God will bless them as they strive to do His will.” (204)", link:"#"},
       { id:"item36", title:"“Help [those you teach] understand that opposition is an opportunity to grow by choosing to follow Christ even when it is difficult” (204)", link:"#"}
-  ]},
+    ]},
   { id:"share-testimony-2", title:"Share Your Testimony (Part 2)",
     items:[
       { id:"item37", title:"“Share your testimony whenever you extend an invitation and promise blessings.” (205)", link:"#"},
       { id:"item38", title:"“Tell how you have been blessed as you have lived the principle you are teaching.” (205)", link:"#"},
       { id:"item39", title:"“Share your testimony that the principle will bless the person’s life as he or she lives it.” (205)", link:"#"}
-  ]},
+    ]},
   { id:"keep-commitments", title:"Help People Keep Their Commitments",
     items:[
       { id:"item40", title:"“Encourage and Help People in Your Daily Contact” (206)", link:"#"},
       { id:"item41", title:"“Have the Influence of the Holy Ghost in Your Daily Contact” (206)", link:"#"},
       { id:"item42", title:"“Show Love” (207)", link:"#"}
-  ]},
-  { id:"schedule-appointments", title:"Schedule Appointments",
-    items:[ { id:"item43", title:"Schedule Appointments", link:"#"} ] },
-  { id:"talk-food", title:"Talk about Food",
-    items:[ { id:"item44", title:"Talk about Food", link:"#"} ] },
-  { id:"talk-health", title:"Talk about Health",
-    items:[ { id:"item45", title:"Talk about Health", link:"#"} ] },
-  { id:"transportation", title:"Transportation",
-    items:[ { id:"item46", title:"Transportation", link:"#"} ] },
-  { id:"daily-life", title:"Daily Life Topic of Choice",
-    items:[ { id:"item47", title:"Daily Life Topic of Choice", link:"#"} ] }
+    ]},
+  { id:"schedule-appointments", title:"Schedule Appointments", items:[ { id:"item43", title:"Schedule Appointments", link:"#"} ] },
+  { id:"talk-food",           title:"Talk about Food",          items:[ { id:"item44", title:"Talk about Food", link:"#"} ] },
+  { id:"talk-health",         title:"Talk about Health",        items:[ { id:"item45", title:"Talk about Health", link:"#"} ] },
+  { id:"transportation",      title:"Transportation",           items:[ { id:"item46", title:"Transportation", link:"#"} ] },
+  { id:"daily-life",          title:"Daily Life Topic of Choice",items:[ { id:"item47", title:"Daily Life Topic of Choice", link:"#"} ] }
+];
+// Long-term Language sections — unnumbered in plan
+const LANGUAGE_SECTIONS_LONG = [
+  { id:"lt-habits", title:"Long-Term Habits & Routines",
+    items:[
+      { id:"lt1", title:"Sustain a daily native-input habit (podcast/news)", link:"#"},
+      { id:"lt2", title:"Weekly deep-dive grammar review plan",               link:"#"},
+      { id:"lt3", title:"Pronunciation refinement routine",                   link:"#"}
+    ]},
+  { id:"lt-milestones", title:"Long-Term Milestones",
+    items:[
+      { id:"lt4", title:"Prepare and deliver a 10-minute talk (native outline)", link:"#"},
+      { id:"lt5", title:"30-day scripture reading challenge (summaries in target language)", link:"#"}
+    ]},
+  { id:"lt-projects", title:"Projects & Portfolios",
+    items:[
+      { id:"lt6", title:"Personal glossary & example sentences (living document)", link:"#"},
+      { id:"lt7", title:"Record monthly self-assessments and reflections",        link:"#"}
+    ]}
 ];
 
 /* =========================================================
-   STORAGE KEYS & HELPERS
-   ========================================================= */
+ STORAGE KEYS & HELPERS
+========================================================= */
 const WEEK_COUNT = 12;
-const getFavKeyPMG   = (w)=> `plan_pmg_week_${w}`;
-const getFavKeySkill = (w)=> `plan_skills_week_${w}`;
-const getWeekStateKey= (w)=> `completion_week_${w}`;
-const EVAL_KEY       = (w)=> `evaluation_week_${w}`;
-const COUNTS_KEY     = "completionCounts";
+const getFavKeyPMG       = (w)=> `plan_pmg_week_${w}`;
+const getFavKeySkill     = (w)=> `plan_skills_week_${w}`;
+const getFavKeySkillLong = (w)=> `plan_skills_long_week_${w}`;
+const getWeekStateKey    = (w)=> `completion_week_${w}`;
+const EVAL_KEY           = (w)=> `evaluation_week_${w}`;
+const COUNTS_KEY         = "completionCounts";
+const CUSTOM_SHORT_KEY   = 'custom_short_goals';
+const CUSTOM_LONG_KEY    = 'custom_long_goals';
 
-const readSet  = (key)=> new Set(JSON.parse(localStorage.getItem(key) || "[]"));
-const writeSet = (key, s)=> localStorage.setItem(key, JSON.stringify(Array.from(s)));
-const readObj  = (key)=> JSON.parse(localStorage.getItem(key) || "{}");
-const writeObj = (key, o)=> localStorage.setItem(key, JSON.stringify(o));
-const readCounts = ()=> JSON.parse(localStorage.getItem(COUNTS_KEY) || "{}");
+const readArr   = (key)=> JSON.parse(localStorage.getItem(key) ?? "[]");
+const writeArr  = (key, arr)=> localStorage.setItem(key, JSON.stringify(arr));
+function getCustomLib(kind){ return kind === 'skill' ? readArr(CUSTOM_SHORT_KEY) : readArr(CUSTOM_LONG_KEY); }
+function setCustomLib(kind, arr){ if (kind === 'skill') writeArr(CUSTOM_SHORT_KEY, arr); else writeArr(CUSTOM_LONG_KEY, arr); }
+
+const readSet   = (key)=> new Set(JSON.parse(localStorage.getItem(key) ?? "[]"));
+const writeSet  = (key, s)=> localStorage.setItem(key, JSON.stringify(Array.from(s)));
+const readObj   = (key)=> JSON.parse(localStorage.getItem(key) ?? "{}");
+const writeObj  = (key, o)=> localStorage.setItem(key, JSON.stringify(o));
+const readCounts= ()=> JSON.parse(localStorage.getItem(COUNTS_KEY) ?? "{}");
 const writeCounts= (o)=> localStorage.setItem(COUNTS_KEY, JSON.stringify(o));
-const getCount   = (id)=> (readCounts()[id] || 0);
-
-function incCount(id){ const c=readCounts(); c[id]=(c[id]||0)+1; writeCounts(c); updateCompletionDisplays(id); }
-function decCount(id){ const c=readCounts(); c[id]=Math.max(0,(c[id]||0)-1); writeCounts(c); updateCompletionDisplays(id); }
+const getCount  = (id)=> (readCounts()[id] ?? 0);
+function incCount(id){ const c=readCounts(); c[id]=(c[id]??0)+1; writeCounts(c); updateCompletionDisplays(id); }
+function decCount(id){ const c=readCounts(); c[id]=Math.max(0,(c[id]??0)-1); writeCounts(c); updateCompletionDisplays(id); }
 
 /* =========================================================
-   DATE / WEEK LOGIC
-   ========================================================= */
+ DATE / WEEK LOGIC
+========================================================= */
 const weekSelect = document.getElementById("week-select");
-let activeWeek = parseInt(localStorage.getItem("activeWeek") || "1",10);
+let activeWeek = parseInt(localStorage.getItem("activeWeek") ?? "1",10);
 if (isNaN(activeWeek) || activeWeek < 1 || activeWeek > WEEK_COUNT) activeWeek = 1;
-
 for (let i=1;i<=WEEK_COUNT;i++){
   const opt = document.createElement("option");
   opt.value = String(i); opt.textContent = `Week ${i}`;
@@ -720,7 +643,7 @@ const entryDateEl = document.getElementById("entry-date");
 (function initEntryDate(){
   const saved = localStorage.getItem("infieldEntryDate");
   const today = new Date();
-  entryDateEl.value = saved || toInput(today);
+  entryDateEl.value = saved ?? toInput(today);
   localStorage.setItem("infieldEntryDate", entryDateEl.value);
   entryDateEl.addEventListener("change", ()=>{
     if (entryDateEl.value){
@@ -741,7 +664,7 @@ function weekStartEnd(weekNumber){
   const entryDate = entryVal ? fromInput(entryVal) : new Date();
   const baseMonday = computeBaseMonday(entryDate);
   const start = new Date(baseMonday); start.setDate(baseMonday.getDate()+7*(weekNumber-1));
-  const end = new Date(start); end.setDate(start.getDate()+6);
+  const end   = new Date(start);      end.setDate(start.getDate()+6);
   return { start, end };
 }
 const WD=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -749,11 +672,11 @@ const MO=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec
 function fmtFull(d){ return `${WD[d.getDay()]} ${MO[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`; }
 
 /* =========================================================
-   NUMBERING
-   ========================================================= */
+ NUMBERING
+========================================================= */
 function buildNumberingMaps(){
   const sectionNum = new Map();
-  const itemNum = new Map();
+  const itemNum    = new Map();
   LANGUAGE_SECTIONS.forEach((sec,si)=>{
     const sNo = si+1; sectionNum.set(sec.id, sNo);
     sec.items.forEach((it,ii)=> itemNum.set(it.id, { sec:sNo, idx: ii+1 }) );
@@ -762,16 +685,16 @@ function buildNumberingMaps(){
 }
 
 /* =========================================================
-   RENDER: SOURCE LISTS (PMG & LANGUAGE)
-   ========================================================= */
-const pmgSource = document.getElementById("pmgSource");
+ RENDER: SOURCE LISTS (PMG & LANGUAGE) — for parity and counts (kept hidden)
+========================================================= */
+const pmgSource      = document.getElementById("pmgSource");
 const languageSource = document.getElementById("languageSource");
 
 function renderSources(){
-  /* PMG as a collapsed accordion under “Chapter 7 Topics” */
+  // PMG
   pmgSource.innerHTML = "";
   const pmgSection = document.createElement("div");
-  pmgSection.className = "section collapsed"; // collapsed by default
+  pmgSection.className = "section collapsed";
   pmgSection.dataset.sectionId = "pmg-ch7";
   const pmgHeader = document.createElement("div");
   pmgHeader.className = "section-header";
@@ -780,24 +703,24 @@ function renderSources(){
   pmgSection.appendChild(pmgHeader);
   const pmgList = document.createElement("ul");
   pmgList.className = "section-items source-list";
-  PMG_TOPICS.forEach(t=>{
-    pmgList.appendChild(buildSourceLi({id:t.id,title:t.title,link:t.link}, "pmg"));
-  });
+  PMG_TOPICS.forEach(t=> pmgList.appendChild(buildSourceLi({id:t.id,title:t.title,link:t.link}, "pmg")));
   pmgSection.appendChild(pmgList);
   pmgSource.appendChild(pmgSection);
 
-  /* Language sections as accordions (collapsed by default) */
-  languageSource.innerHTML="";
+  // Language (short-term)
+  languageSource.innerHTML = "";
   const { sectionNum } = buildNumberingMaps();
   LANGUAGE_SECTIONS.forEach(sec=>{
     const sWrap = document.createElement("div");
     sWrap.className = "section collapsed";
     sWrap.dataset.sectionId = sec.id;
+
     const header = document.createElement("div");
     header.className = "section-header";
     header.innerHTML = `<span class="arrow">▶</span><span>${sectionNum.get(sec.id)}. ${sec.title}</span>`;
     header.addEventListener("click", ()=> sWrap.classList.toggle("collapsed"));
     sWrap.appendChild(header);
+
     const items = document.createElement("ul");
     items.className = "section-items source-list";
     sec.items.forEach((it, index)=>{
@@ -809,52 +732,53 @@ function renderSources(){
   });
 
   refreshAddButtons();
-  refreshAllCompletionDisplays(); // ensure source cards show current counts on render
+  refreshAllCompletionDisplays();
 }
 
 function buildSourceLi(item, kind){
   const li = document.createElement("li");
   li.dataset.itemId = item.id;
+
   const card = document.createElement("div"); card.className="card";
-  const top = document.createElement("div"); top.className="card-row top";
-  /* Source row: [+] then title (no link/move here) */
+  const top  = document.createElement("div"); top.className="card-row top";
+
   const actionsLeft = document.createElement("div"); actionsLeft.className="card-actions-left";
-  const btn = document.createElement("button"); btn.className="add-btn"; btn.textContent="+";
+  const btn  = document.createElement("button"); btn.className="add-btn"; btn.textContent="+";
   actionsLeft.appendChild(btn);
+
   const title = document.createElement("div"); title.className="card-title";
   const titleText = document.createElement("span"); titleText.className="card-title-text"; titleText.textContent=item.title;
   title.appendChild(titleText);
+
   top.appendChild(actionsLeft);
   top.appendChild(title);
   card.appendChild(top);
 
-  /* NEW: completion line under source card, kept in sync by updateCompletionDisplays */
   const line = document.createElement("div");
   line.className = "completion-line";
   line.dataset.compId = item.id;
-  (function initSourceLine(){
-    const count = getCount(item.id);
-    line.textContent = count > 0 ? `Completed ${count} ${count===1 ? "time" : "times"}` : "";
-  })();
+  (function initSourceLine(){ const count = getCount(item.id); line.textContent = count > 0 ? `Completed ${count} ${count===1 ? "time" : "times"}` : ""; })();
   card.appendChild(line);
 
   btn.addEventListener("click", (e)=>{
     e.stopPropagation();
     if (btn.disabled) return;
-    if (kind==="pmg") addPMGToPlan(item);
-    else addSkillToPlan(item);
+    if (kind === "pmg")       addPMGToPlan(item);
+    else if (kind === "skill")     addSkillToPlan(item);
+    else if (kind === "skillLong") addSkillLongToPlan(item);
   });
+
   li.appendChild(card);
   return li;
 }
 
 /* =========================================================
-   PLAN RENDER & ACTIONS (open-circle check + reordered)
-   ========================================================= */
-const planPMG   = document.getElementById("planPMG");
-const planSkills= document.getElementById("planSkills");
-const planEval  = document.getElementById("planEval");
-const stickyMini= document.getElementById("stickyMini");
+ PLAN RENDER & ACTIONS
+========================================================= */
+const planPMG        = document.getElementById("planPMG");
+const planSkills     = document.getElementById("planSkills");
+const planSkillsLong = document.getElementById("planSkillsLong");
+const planEval       = document.getElementById("planEval");
 
 function refreshNavButtons(){
   const prevBtn = document.getElementById("prevWeek");
@@ -865,69 +789,80 @@ function refreshNavButtons(){
   prevBtn.title = prevBtn.disabled ? "You are on Week 1" : "";
   nextBtn.title = nextBtn.disabled ? "You are on Week 12" : "";
 }
-
 function updatePlanHeader(){
   const { start, end } = weekStartEnd(activeWeek);
-  document.getElementById("planTitle").textContent = `Week ${activeWeek} Study Plan`;
+  document.getElementById("planTitle").textContent = `Week ${activeWeek} Language Study Plan`;
   document.getElementById("planDates").textContent = `${fmtFull(start)} – ${fmtFull(end)}`;
-  stickyMini.textContent = `→ Week ${activeWeek} Study Plan`;
 }
-
 function renderPlan(){
   updatePlanHeader();
 
   // PMG (single)
-  planPMG.innerHTML="";
+  planPMG.innerHTML = "";
   const pmgSet = readSet(getFavKeyPMG(activeWeek));
   const chosenId = pmgSet.values().next().value;
   if (chosenId){
     const topic = PMG_TOPICS.find(t=>t.id===chosenId);
-    if (topic){
-      planPMG.appendChild(buildPlanLi(topic, "pmg", null)); // no number for PMG
-    }
+    if (topic) planPMG.appendChild(buildPlanLi(topic, "pmg", null));
   }
 
-  // Skills (unlimited)
-  planSkills.innerHTML="";
+  // Short-term Skills (numbered)
+  planSkills.innerHTML = "";
   const skillSet = readSet(getFavKeySkill(activeWeek));
   const { itemNum } = buildNumberingMaps();
   Array.from(skillSet).forEach(id=>{
     const item = findItemById(id);
     if (item){
-      const numObj = itemNum.get(item.id); // {sec, idx}
+      const numObj = itemNum.get(item.id);
       const displayNum = numObj ? `${numObj.sec}.${numObj.idx}` : null;
       planSkills.appendChild(buildPlanLi(item, "skill", displayNum));
     }
   });
 
-  // Evaluation (always present)
-  planEval.innerHTML="";
+  // Long-term Skills (unnumbered)
+  planSkillsLong.innerHTML = "";
+  const skillLongSet = readSet(getFavKeySkillLong(activeWeek));
+  Array.from(skillLongSet).forEach(id=>{
+    const item = findItemById(id);
+    if (item){
+      planSkillsLong.appendChild(buildPlanLi(item, "skillLong", null));
+    }
+  });
+
+  // Evaluation
+  planEval.innerHTML = "";
   planEval.appendChild(buildEvalLi());
+
   refreshAddButtons();
   refreshAddOpenButtons();
 }
-
 function findItemById(id){
   for (const sec of LANGUAGE_SECTIONS){
     const found = sec.items.find(i=>i.id===id);
     if (found) return found;
   }
+  for (const sec of LANGUAGE_SECTIONS_LONG){
+    const found = sec.items.find(i=>i.id===id);
+    if (found) return found;
+  }
+  // custom libraries
+  const cShort = readArr(CUSTOM_SHORT_KEY).find(i => i.id === id);
+  if (cShort) return { id: cShort.id, title: cShort.title, link: "#" };
+  const cLong  = readArr(CUSTOM_LONG_KEY).find(i => i.id === id);
+  if (cLong)  return { id: cLong.id, title: cLong.title, link: "#" };
   return null;
 }
-
 function buildPlanLi(item, kind, displayNum){
   const li = document.createElement("li");
   li.dataset.planId = item.id;
-  const card = document.createElement("div"); card.className="card in-plan";
 
-  /* ---- TOP ROW: remove (left) + circle-check + [num + title] + right actions (link + move) ---- */
-  const top = document.createElement("div"); top.className="card-row top";
+  const card = document.createElement("div"); card.className="card in-plan";
+  const top  = document.createElement("div"); top.className="card-row top";
 
   const actionsLeft = document.createElement("div"); actionsLeft.className="card-actions-left";
   const remove = document.createElement("button"); remove.className="remove-btn"; remove.title="Remove"; remove.textContent="–";
   actionsLeft.appendChild(remove);
 
-  // Circle check (open/filled)
   const circle = document.createElement("button");
   circle.className = "circle-check";
   circle.setAttribute("role","checkbox");
@@ -935,14 +870,12 @@ function buildPlanLi(item, kind, displayNum){
   circle.setAttribute("title","Mark completed");
   circle.innerHTML = '<span class="mark">✓</span>';
 
-  // Title group: number + text
   const title = document.createElement("div"); title.className="card-title";
   const numSpan = document.createElement("span"); numSpan.className="card-num";
   if (displayNum) numSpan.textContent = displayNum; else numSpan.style.display = "none";
   const titleText = document.createElement("span"); titleText.className="card-title-text"; titleText.textContent = item.title;
   title.appendChild(numSpan); title.appendChild(titleText);
 
-  // Right actions: link + move
   const right = document.createElement("div"); right.className="right-actions";
   const linkA = document.createElement("a");
   linkA.className="ext-link"; linkA.textContent="↗"; linkA.href=item.link||"#"; linkA.target="_blank"; linkA.rel="noopener noreferrer";
@@ -956,20 +889,16 @@ function buildPlanLi(item, kind, displayNum){
   top.appendChild(right);
   card.appendChild(top);
 
-  /* ---- COMPLETION LINE ---- */
-  const line = document.createElement("div"); line.className="completion-line"; line.dataset.compId = item.id;
-  card.appendChild(line);
+  const line = document.createElement("div"); line.className="completion-line"; line.dataset.compId = item.id; card.appendChild(line);
 
-  // load per-week check state
   const wkState = readObj(getWeekStateKey(activeWeek));
   let isChecked = !!wkState[item.id];
   applyCheckUI(isChecked, circle, card, line, item.id);
+  remove.disabled = isChecked;
 
-  // Toggle handlers for circle (click/keyboard)
   circle.addEventListener("click", ()=>toggleCheck(item.id));
-  circle.addEventListener("keydown", (e)=>{
-    if (e.key === " " || e.key === "Enter"){ e.preventDefault(); toggleCheck(item.id); }
-  });
+  circle.addEventListener("keydown",(e)=>{ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); toggleCheck(item.id); } });
+
   function toggleCheck(id){
     const state = readObj(getWeekStateKey(activeWeek));
     const now = !state[id];
@@ -977,16 +906,18 @@ function buildPlanLi(item, kind, displayNum){
     if (now) incCount(id); else decCount(id);
     isChecked = now;
     applyCheckUI(isChecked, circle, card, line, id);
+    remove.disabled = isChecked;
     refreshMoveNextButton(moveNext, item, kind, isChecked);
   }
 
-  remove.addEventListener("click", ()=>{
-    if (kind==="pmg"){
-      const set = readSet(getFavKeyPMG(activeWeek));
-      set.clear(); writeSet(getFavKeyPMG(activeWeek), set);
-    } else {
-      const set = readSet(getFavKeySkill(activeWeek));
-      set.delete(item.id); writeSet(getFavKeySkill(activeWeek), set);
+  remove.addEventListener("click", () => {
+    if (isChecked) { showToast("Uncheck the item before removing it"); return; }
+    if (kind === "pmg") {
+      const set = readSet(getFavKeyPMG(activeWeek)); set.clear(); writeSet(getFavKeyPMG(activeWeek), set);
+    } else if (kind === "skill") {
+      const set = readSet(getFavKeySkill(activeWeek)); set.delete(item.id); writeSet(getFavKeySkill(activeWeek), set);
+    } else if (kind === "skillLong") {
+      const set = readSet(getFavKeySkillLong(activeWeek)); set.delete(item.id); writeSet(getFavKeySkillLong(activeWeek), set);
     }
     refreshUI();
   });
@@ -997,48 +928,44 @@ function buildPlanLi(item, kind, displayNum){
   li.appendChild(card);
   return li;
 }
-
 function applyCheckUI(isChecked, circleBtn, card, lineEl, itemId){
   circleBtn.setAttribute("aria-checked", isChecked ? "true" : "false");
   card.classList.toggle("completed", isChecked);
   const count = getCount(itemId);
   lineEl.textContent = count>0 ? `Completed ${count} ${count===1 ? "time" : "times"}` : "";
 }
-
 function refreshMoveNextButton(btn, item, kind, isChecked){
   const nextWeek = activeWeek + 1;
   if (nextWeek > WEEK_COUNT){
-    btn.disabled = true; btn.classList.toggle("is-repeat", isChecked);
+    btn.disabled = true;
+    btn.classList.toggle("is-repeat", isChecked);
     btn.textContent = isChecked ? "⟳" : "→";
     btn.title = "You are on Week 12. There is no next week.";
     return;
   }
-  let alreadyThere=false;
-  if (kind==="pmg"){
+  let alreadyThere = false;
+  if (kind === "pmg"){
     const nset = readSet(getFavKeyPMG(nextWeek));
     const chosen = nset.values().next().value;
     alreadyThere = (chosen === item.id);
-  }else{
-    const nset = readSet(getFavKeySkill(nextWeek));
-    alreadyThere = nset.has(item.id);
+  } else if (kind === "skill") {
+    const nset = readSet(getFavKeySkill(nextWeek)); alreadyThere = nset.has(item.id);
+  } else if (kind === "skillLong") {
+    const nset = readSet(getFavKeySkillLong(nextWeek)); alreadyThere = nset.has(item.id);
   }
   btn.textContent = isChecked ? "⟳" : "→";
   btn.classList.toggle("is-repeat", isChecked);
   btn.disabled = alreadyThere;
   btn.title = alreadyThere ? "Already in next week's plan." : (isChecked ? "Repeat in next week" : "Move to next week");
 }
-
 async function handleMoveNext(item, kind, isChecked){
-  const nextWeek = activeWeek + 1;
-  if (nextWeek > WEEK_COUNT) return; // button is disabled anyway
-
-  if (kind==="pmg"){
+  const nextWeek = activeWeek + 1; if (nextWeek > WEEK_COUNT) return;
+  if (kind === "pmg"){
     const nset = readSet(getFavKeyPMG(nextWeek));
-    const currentNext = nset.values().next().value || null;
+    const currentNext = nset.values().next().value ?? null;
     if (currentNext && currentNext !== item.id){
       const ok = await appConfirm(`Next week already has a PMG topic. Replace it with "${item.title}"?`, "Replace PMG for next week");
-      if (!ok) return;
-      nset.clear();
+      if (!ok) return; nset.clear();
     }
     nset.add(item.id); writeSet(getFavKeyPMG(nextWeek), nset);
     if (!isChecked){
@@ -1046,11 +973,17 @@ async function handleMoveNext(item, kind, isChecked){
       const state = readObj(getWeekStateKey(activeWeek)); Object.keys(state).forEach(k=>{ if(k===item.id) state[k]=false; }); writeObj(getWeekStateKey(activeWeek), state);
     }
     const nstate = readObj(getWeekStateKey(nextWeek)); nstate[item.id] = false; writeObj(getWeekStateKey(nextWeek), nstate);
-  } else {
-    const nset = readSet(getFavKeySkill(nextWeek));
-    if (!nset.has(item.id)) nset.add(item.id); writeSet(getFavKeySkill(nextWeek), nset);
+  } else if (kind === "skill") {
+    const nset = readSet(getFavKeySkill(nextWeek)); if (!nset.has(item.id)) nset.add(item.id); writeSet(getFavKeySkill(nextWeek), nset);
     if (!isChecked){
       const cset = readSet(getFavKeySkill(activeWeek)); cset.delete(item.id); writeSet(getFavKeySkill(activeWeek), cset);
+      const state = readObj(getWeekStateKey(activeWeek)); state[item.id] = false; writeObj(getWeekStateKey(activeWeek), state);
+    }
+    const nstate = readObj(getWeekStateKey(nextWeek)); nstate[item.id] = false; writeObj(getWeekStateKey(nextWeek), nstate);
+  } else if (kind === "skillLong") {
+    const nset = readSet(getFavKeySkillLong(nextWeek)); if (!nset.has(item.id)) nset.add(item.id); writeSet(getFavKeySkillLong(nextWeek), nset);
+    if (!isChecked){
+      const cset = readSet(getFavKeySkillLong(activeWeek)); cset.delete(item.id); writeSet(getFavKeySkillLong(activeWeek), cset);
       const state = readObj(getWeekStateKey(activeWeek)); state[item.id] = false; writeObj(getWeekStateKey(activeWeek), state);
     }
     const nstate = readObj(getWeekStateKey(nextWeek)); nstate[item.id] = false; writeObj(getWeekStateKey(nextWeek), nstate);
@@ -1058,124 +991,105 @@ async function handleMoveNext(item, kind, isChecked){
   refreshUI();
 }
 
-/* ===== Evaluation special card (open-circle; no counts) ===== */
+/* ===== Evaluation special card ===== */
 function buildEvalLi(){
   const li = document.createElement("li");
   const card = document.createElement("div"); card.className="card in-plan";
   const top = document.createElement("div"); top.className="card-row top";
-
-  // circle check
   const circle = document.createElement("button");
   circle.className = "circle-check";
   circle.setAttribute("role","checkbox");
   circle.setAttribute("aria-checked","false");
   circle.setAttribute("title","Mark completed");
   circle.innerHTML = '<span class="mark">✓</span>';
-
   const title = document.createElement("div"); title.className="card-title";
   const numSpan = document.createElement("span"); numSpan.className="card-num"; numSpan.style.display="none";
   const titleText = document.createElement("span"); titleText.className="card-title-text"; titleText.textContent="Complete a Language Study Evaluation";
   title.appendChild(numSpan); title.appendChild(titleText);
-
   const right = document.createElement("div"); right.className="right-actions";
   const a = document.createElement("a"); a.className="ext-link"; a.textContent="↗"; a.href="https://www.churchofjesuschrist.org/study/manual/preach-my-gospel-2023/15-chapter-7?lang=eng&id=figure2_title1-figure2_p8#figure2_title1"; a.target="_blank"; a.rel="noopener noreferrer"; a.dataset.linkId="evaluation";
   right.appendChild(a);
-
   top.appendChild(circle); top.appendChild(title); top.appendChild(right);
   card.appendChild(top);
-
   const line = document.createElement("div"); line.className="completion-line"; card.appendChild(line);
-
   let isOn = localStorage.getItem(EVAL_KEY(activeWeek)) === "true";
-  applyCheckUI(isOn, circle, card, line, "evaluation"); // counts ignored for evaluation
+  applyCheckUI(isOn, circle, card, line, "evaluation");
   circle.addEventListener("click", ()=>{
     isOn = !isOn; localStorage.setItem(EVAL_KEY(activeWeek), String(isOn));
     applyCheckUI(isOn, circle, card, line, "evaluation");
   });
   circle.addEventListener("keydown",(e)=>{ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); circle.click(); }});
-
   li.appendChild(card);
   return li;
 }
 
 /* =========================================================
-   ADD / DISABLE LOGIC FOR SOURCE BUTTONS
-   ========================================================= */
+ ADD / DISABLE LOGIC FOR SOURCE BUTTONS
+========================================================= */
 function refreshAddButtons(){
   const pmgSet = readSet(getFavKeyPMG(activeWeek));
-  const chosen = pmgSet.values().next().value || null;
+  const chosen = pmgSet.values().next().value ?? null;
   document.querySelectorAll('#pmgSource li[data-item-id]').forEach(li=>{
-    const id = li.dataset.itemId;
+    const id  = li.dataset.itemId;
     const btn = li.querySelector('.add-btn');
-    btn.disabled = (id === chosen); // only the chosen PMG disabled
+    btn.disabled = (id === chosen);
   });
-
   const skillSet = readSet(getFavKeySkill(activeWeek));
   document.querySelectorAll('#languageSource li[data-item-id]').forEach(li=>{
-    const id = li.dataset.itemId;
+    const id  = li.dataset.itemId;
     const btn = li.querySelector('.add-btn');
     btn.disabled = skillSet.has(id);
   });
 }
 
 /* =========================================================
-   LANGUAGE ACCORDION CONTROLS
-   ========================================================= */
-document.getElementById("expandAllLanguage").addEventListener("click", () => {
+ HIDDEN SECTION ACCORDION CONTROLS (for completeness)
+========================================================= */
+document.getElementById("expandAllLanguage")?.addEventListener("click", () => {
   document.querySelectorAll("#languageSource .section").forEach(sec => sec.classList.remove("collapsed"));
 });
-document.getElementById("collapseAllLanguage").addEventListener("click", () => {
+document.getElementById("collapseAllLanguage")?.addEventListener("click", () => {
   document.querySelectorAll("#languageSource .section").forEach(sec => sec.classList.add("collapsed"));
 });
 
 /* =========================================================
-   ADD TO PLAN (from source)
-   ========================================================= */
+ ADD TO PLAN (from source)
+========================================================= */
 async function addPMGToPlan(topic){
   const set = readSet(getFavKeyPMG(activeWeek));
-  // If nothing selected yet, just add it
   if (set.size === 0){
-    set.add(topic.id);
-    writeSet(getFavKeyPMG(activeWeek), set);
+    set.add(topic.id); writeSet(getFavKeyPMG(activeWeek), set);
     refreshUI();
-    if (isPickerOpen()) refreshPickerAddButtons(getPickerBody(), 'pmg');
+    if (isPickerOpen()) refreshPickerAddButtons(getPickerContent(), 'pmg');
     return;
   }
-  // Otherwise, confirm replacement
   closePicker();
   const ok = await appConfirm(
     `You can only have one study focus in this section. Would you like to change it to "${topic.title}"?`,
     "Replace Study Focus"
   );
   if (!ok) return;
-
-  // Replace existing PMG topic
-  set.clear();
-  set.add(topic.id);
-  writeSet(getFavKeyPMG(activeWeek), set);
-
-  // Clear checked state for PMG items this week
-  const state = readObj(getWeekStateKey(activeWeek));
-  Object.keys(state).forEach(k => { if (k.startsWith("pmg")) state[k]=false; });
-  writeObj(getWeekStateKey(activeWeek), state);
-
+  set.clear(); set.add(topic.id); writeSet(getFavKeyPMG(activeWeek), set);
+  const state = readObj(getWeekStateKey(activeWeek)); Object.keys(state).forEach(k => { if (k.startsWith("pmg")) state[k]=false; }); writeObj(getWeekStateKey(activeWeek), state);
   refreshUI();
-  if (isPickerOpen()) refreshPickerAddButtons(getPickerBody(), 'pmg');
+  if (isPickerOpen()) refreshPickerAddButtons(getPickerContent(), 'pmg');
 }
-
 function addSkillToPlan(item){
   const set = readSet(getFavKeySkill(activeWeek));
-  if (!set.has(item.id)){ set.add(item.id); writeSet(getFavKeySkill(activeWeek), set); refreshUI();if (isPickerOpen()) refreshPickerAddButtons(getPickerBody(), 'skill');}
+  if (!set.has(item.id)){ set.add(item.id); writeSet(getFavKeySkill(activeWeek), set); refreshUI(); if (isPickerOpen()) refreshPickerAddButtons(getPickerContent(), 'skill'); }
+}
+function addSkillLongToPlan(item){
+  const set = readSet(getFavKeySkillLong(activeWeek));
+  if (!set.has(item.id)){ set.add(item.id); writeSet(getFavKeySkillLong(activeWeek), set); refreshUI(); if (isPickerOpen()) refreshPickerAddButtons(getPickerContent(), 'skillLong'); }
 }
 
 /* =========================================================
-   COPY PLAN → MARKDOWN (with dates & numbering)
-   ========================================================= */
+ COPY PLAN → MARKDOWN
+========================================================= */
 document.getElementById("copyPlan").addEventListener("click", () => {
   const { start, end } = weekStartEnd(activeWeek);
-  const planTitle = `## Week ${activeWeek} Study Plan`;
+  const planTitle = `## Week ${activeWeek} Language Study Plan`;
   const datesLine = `_${fmtFull(start)} – ${fmtFull(end)}_`;
-
   const pmgSet = readSet(getFavKeyPMG(activeWeek));
   const pmgId = pmgSet.values().next().value;
   const pmgTopic = PMG_TOPICS.find(t => t.id === pmgId);
@@ -1183,19 +1097,28 @@ document.getElementById("copyPlan").addEventListener("click", () => {
   const { itemNum } = buildNumberingMaps();
   const skillSet = readSet(getFavKeySkill(activeWeek));
   const skillsLines = Array.from(skillSet).map(id=>{
-    const item = findItemById(id) || { title:id };
-    const num = itemNum.get(id);
-    const t = num ? `${num.sec}.${num.idx} ${item.title}` : item.title;
+    const item = findItemById(id) ?? { title:id };
+    const num  = itemNum.get(id);
+    const t    = num ? `${num.sec}.${num.idx} ${item.title}` : item.title;
     return `- ${t}`;
+  });
+
+  const skillSetLong = readSet(getFavKeySkillLong(activeWeek));
+  const skillsLongLines = Array.from(skillSetLong).map(id=>{
+    const item = findItemById(id) ?? { title:id };
+    return `- ${item.title}`; // unnumbered
   });
 
   const lines = [
     planTitle, datesLine, "",
     "### Preach My Gospel study section", ...(pmgTopic ? [`- ${pmgTopic.title}`] : []),
-    "", "### Language Skills", ...(skillsLines.length ? skillsLines : []),
-    "", "### Evaluate Your Language Study", "- Complete a Language Study Evaluation"
+    "",
+    "### Short-Term Language Skills", ...(skillsLines.length ? skillsLines : []),
+    "",
+    "### Long-Term Language Skills", ...(skillsLongLines.length ? skillsLongLines : []),
+    "",
+    "### Evaluate Your Language Study", "- Complete a Language Study Evaluation"
   ];
-
   const text = lines.join("\n");
   navigator.clipboard?.writeText(text)
     .then(()=> { showToast("Plan copied to clipboard"); })
@@ -1209,31 +1132,29 @@ document.getElementById("copyPlan").addEventListener("click", () => {
 });
 
 /* =========================================================
-   CLEAR ACTIONS & NAV (BUG-FIXED)
-   ========================================================= */
+ CLEAR ACTIONS & NAV  (now clears LONG-TERM too)
+========================================================= */
 document.getElementById("clearWeek").addEventListener("click", async ()=>{
   const { start, end } = weekStartEnd(activeWeek);
-
-const msg =
-  `Clear Week ${activeWeek}?\n\n` +
-  `This will:\n` +
-  `• Remove all items from this week’s plan\n` +
-  `• Uncheck anything you marked “completed” this week (including Evaluation)\n` +
-  `• Reduce the “Completed X times” total for items you checked this week by 1\n\n` +
-  `Week dates: ${fmtFull(start)} – ${fmtFull(end)}\n\n` +
-  `This cannot be undone. Continue?`;
+  const msg =
+`Clear Week ${activeWeek}?\n\n` +
+`This will:\n` +
+`• Remove all items from this week’s plan\n` +
+`• Uncheck anything you marked “completed” this week (including Evaluation)\n` +
+`• Reduce the “Completed X times” total for items you checked this week by 1\n\n` +
+`Week dates: ${fmtFull(start)} – ${fmtFull(end)}\n\n` +
+`This cannot be undone. Continue?`;
   const ok = await appConfirm(msg, "Clear Week");
   if (!ok) return;
 
-  // Decrement counts for any items marked completed this week (not evaluation)
   const state = readObj(getWeekStateKey(activeWeek));
-  Object.entries(state).forEach(([itemId, isOn])=>{
-    if (isOn && itemId !== "evaluation") decCount(itemId);
-  });
+  Object.entries(state).forEach(([itemId, isOn])=>{ if (isOn && itemId !== "evaluation") decCount(itemId); });
 
-  // Clear this week selections/state
-  writeSet(getFavKeyPMG(activeWeek),   new Set());
-  writeSet(getFavKeySkill(activeWeek), new Set());
+  // CLEAR PMG, SHORT-TERM, LONG-TERM
+  writeSet(getFavKeyPMG(activeWeek),       new Set());
+  writeSet(getFavKeySkill(activeWeek),     new Set());
+  writeSet(getFavKeySkillLong(activeWeek), new Set());
+
   localStorage.removeItem(EVAL_KEY(activeWeek));
   localStorage.removeItem(getWeekStateKey(activeWeek));
 
@@ -1242,26 +1163,26 @@ const msg =
 });
 
 document.getElementById("clearAll").addEventListener("click", async ()=>{
-
-const msg =
-  `Clear ALL weeks (Weeks 1–${WEEK_COUNT})?\n\n` +
-  `This will:\n` +
-  `• Remove all items from every week’s plan\n` +
-  `• Uncheck everything that was marked “completed” in any week\n` +
-  `• Reset every item’s “Completed X times” total to 0\n\n` +
-  `This cannot be undone. Continue?`;
-
+  const msg =
+`Clear ALL weeks (Weeks 1–${WEEK_COUNT})?\n\n` +
+`This will:\n` +
+`• Remove all items from every week’s plan\n` +
+`• Uncheck everything that was marked “completed” in any week\n` +
+`• Reset every item’s “Completed X times” total to 0\n\n` +
+`This cannot be undone. Continue?`;
   const ok = await appConfirm(msg, "Clear All Weeks");
   if (!ok) return;
 
   for (let w=1; w<=WEEK_COUNT; w++){
-    writeSet(getFavKeyPMG(w),   new Set());
-    writeSet(getFavKeySkill(w), new Set());
+    // CLEAR PMG, SHORT-TERM, LONG-TERM
+    writeSet(getFavKeyPMG(w),       new Set());
+    writeSet(getFavKeySkill(w),     new Set());
+    writeSet(getFavKeySkillLong(w), new Set());
+
     localStorage.removeItem(EVAL_KEY(w));
     localStorage.removeItem(getWeekStateKey(w));
   }
   localStorage.removeItem(COUNTS_KEY);
-
   refreshUI();
   showToast("All weeks cleared");
 });
@@ -1278,22 +1199,8 @@ document.getElementById("prevWeek").addEventListener("click", () => {
 });
 
 /* =========================================================
-   STICKY MINI HEADER SCROLL
-   ========================================================= */
-const planWrapper = document.getElementById("planWrapper");
-const io = new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{
-    stickyMini.classList.toggle("show", !e.isIntersecting);
-  });
-}, { rootMargin: "-70px 0px 0px 0px", threshold: 0 });
-io.observe(planWrapper);
-stickyMini.addEventListener("click", ()=>{
-  planWrapper.scrollIntoView({behavior:"smooth",block:"start"});
-});
-
-/* =========================================================
-   COMPLETION LINE REFRESH
-   ========================================================= */
+ COMPLETION LINE REFRESH
+========================================================= */
 function updateCompletionDisplays(itemId){
   const count = getCount(itemId);
   document.querySelectorAll(`.completion-line[data-comp-id="${itemId}"]`).forEach(el=>{
@@ -1302,8 +1209,8 @@ function updateCompletionDisplays(itemId){
 }
 
 /* =========================================================
-   INFO POPOVER (Option C) — fixed positioning under ⓘ
-   ========================================================= */
+ INFO POPOVER
+========================================================= */
 const noticeBtn = document.getElementById("noticeBtn");
 const noticePop = document.getElementById("noticePop");
 document.addEventListener("click", (e)=>{
@@ -1315,12 +1222,11 @@ document.addEventListener("click", (e)=>{
       const popWidth = noticePop.offsetWidth;
       let left = rect.left + rect.width/2 - popWidth/2;
       left = Math.max(8, Math.min(left, window.innerWidth - popWidth - 8));
-      noticePop.style.top  = `${rect.bottom + 8}px`;
+      noticePop.style.top = `${rect.bottom + 8}px`;
       noticePop.style.left = `${left}px`;
     }
     return;
   }
-  // click outside closes
   if (!noticePop.contains(e.target)){
     noticePop.classList.remove("show");
     noticeBtn.setAttribute("aria-expanded","false");
@@ -1329,14 +1235,10 @@ document.addEventListener("click", (e)=>{
 
 /* ===== Custom alert/confirm helpers ===== */
 function appAlert(message, {title} = {}){
-  return new Promise(resolve => {
-    openAppModal({ message, title, mode: 'alert', onOk: () => resolve() });
-  });
+  return new Promise(resolve => { openAppModal({ message, title, mode: 'alert', onOk: () => resolve() }); });
 }
 function appConfirm(message, title = "Confirm"){
-  return new Promise(resolve => {
-    openAppModal({ message, title, mode: 'confirm', onOk: () => resolve(true), onCancel: () => resolve(false) });
-  });
+  return new Promise(resolve => { openAppModal({ message, title, mode: 'confirm', onOk: () => resolve(true), onCancel: () => resolve(false) }); });
 }
 function openAppModal({ message, title, mode, onOk, onCancel }){
   const modal = document.getElementById('appModal');
@@ -1346,21 +1248,11 @@ function openAppModal({ message, title, mode, onOk, onCancel }){
   const btnCancel = document.getElementById('appModalCancel');
   const btnClose = modal.querySelector('.app-modal__close');
   const backdrop = modal.querySelector('.app-modal__backdrop');
-
-  // set title & message
   if (title) titleEl.textContent = title;
   msgEl.textContent = message;
-
-  // show/hide Cancel depending on mode
   btnCancel.style.display = (mode === 'confirm') ? 'inline-block' : 'none';
-
-  // open
   modal.setAttribute('aria-hidden', 'false');
-
-  // focus management: focus OK
   setTimeout(() => btnOk.focus(), 0);
-
-  // cleanup replaces nodes to drop old handlers
   const cleanup = () => {
     modal.setAttribute('aria-hidden', 'true');
     btnOk.replaceWith(btnOk.cloneNode(true));
@@ -1368,21 +1260,17 @@ function openAppModal({ message, title, mode, onOk, onCancel }){
     btnClose.replaceWith(btnClose.cloneNode(true));
     backdrop.replaceWith(backdrop.cloneNode(true));
   };
-
-  // re-query after clone for fresh nodes, then wire handlers
   const wire = () => {
     const ok = document.getElementById('appModalOk');
     const cancel = document.getElementById('appModalCancel');
     const close = modal.querySelector('.app-modal__close');
     const back = modal.querySelector('.app-modal__backdrop');
-
     ok.addEventListener('click', () => { cleanup(); onOk && onOk(); });
     cancel.addEventListener('click', () => { cleanup(); onCancel && onCancel(); });
-    close.addEventListener('click', () => { cleanup(); (onCancel || onOk)?.(); });
-    back.addEventListener('click', () => { cleanup(); (onCancel || onOk)?.(); });
-
+    close.addEventListener('click', () => { cleanup(); (onCancel ?? onOk)?.(); });
+    back.addEventListener('click', () => { cleanup(); (onCancel ?? onOk)?.(); });
     modal.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { e.preventDefault(); cleanup(); (onCancel || onOk)?.(); }
+      if (e.key === 'Escape') { e.preventDefault(); cleanup(); (onCancel ?? onOk)?.(); }
     });
   };
   wire();
@@ -1395,206 +1283,295 @@ function showToast(message, timeout = 2000){
   toast.textContent = message;
   toast.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    toast.classList.remove("show");
-  }, timeout);
+  toastTimer = setTimeout(() => { toast.classList.remove("show"); }, timeout);
 }
 
 /* ===== Refresh all source completion lines after rendering ===== */
-function refreshAllCompletionDisplays(){
-  PMG_TOPICS.forEach(t => updateCompletionDisplays(t.id));
-  LANGUAGE_SECTIONS.forEach(sec => { sec.items.forEach(it => updateCompletionDisplays(it.id)); });
-}
-
+function refreshAllCompletionDisplays(){ PMG_TOPICS.forEach(t => updateCompletionDisplays(t.id)); LANGUAGE_SECTIONS.forEach(sec => { sec.items.forEach(it => updateCompletionDisplays(it.id)); }); }
 
 /* =========================================================
- ADD PICKER MODAL + ADD BUTTONS
- ========================================================= */
+ CUSTOM GOALS (library + section render)
+========================================================= */
+function renderCustomGoalsSection(container, kind){
+  const isShort = (kind === 'skill');
+  const lib = getCustomLib(kind);
 
-// --- Helpers to open/close the picker modal
+  const sWrap = document.createElement('div');
+  sWrap.className = 'section'; // open by default (not collapsed)
+  sWrap.dataset.sectionId = isShort ? 'custom-short' : 'custom-long';
+
+  const header = document.createElement('div');
+  header.className = 'section-header';
+  const headerTitle = isShort ? 'My short-term goals' : 'My long-term goals';
+  header.innerHTML = `<span class="arrow">▶</span><span>${headerTitle}</span>`;
+  header.addEventListener('click', () => sWrap.classList.toggle('collapsed'));
+  sWrap.appendChild(header);
+
+  const items = document.createElement('ul');
+  items.className = 'section-items source-list';
+  lib.forEach(it => {
+    items.appendChild(buildSourceLi({ id: it.id, title: it.title, link: "#" }, kind));
+  });
+  sWrap.appendChild(items);
+
+  container.appendChild(sWrap);
+}
+
+/* =========================================================
+ PICKER MODAL + RENDERERS (static toolbar, content-only render)
+========================================================= */
 function openPicker(kind) {
   const modal   = document.getElementById('pickerModal');
   const titleEl = document.getElementById('pickerTitle');
-  const bodyEl  = document.getElementById('pickerBody');
+  const content = document.getElementById('pickerContent');
 
-  // Reset body
-  bodyEl.innerHTML = '';
-
+  // prepare content
+  content.innerHTML = '';
   if (kind === 'pmg') {
     titleEl.textContent = 'Add Chapter 7 topics';
-    renderPMGPicker(bodyEl);
-  } else {
-    titleEl.textContent = 'Add language skills';
-    renderLanguagePicker(bodyEl);
+    document.getElementById('pickerAddCustom').style.display = 'none';
+    renderPMGPicker(content);
+  } else if (kind === 'skill') {
+    titleEl.textContent = 'Short-Term Language Skills';
+    document.getElementById('pickerAddCustom').style.display = '';
+    renderLanguagePicker(content);
+  } else if (kind === 'skillLong') {
+    titleEl.textContent = 'Long-Term Language Skills';
+    document.getElementById('pickerAddCustom').style.display = '';
+    renderLanguagePickerLong(content);
   }
 
-  // Open modal
+  // wire toolbar (clone-to-clean)
+  const expandBtn   = document.getElementById('pickerExpand');
+  const collapseBtn = document.getElementById('pickerCollapse');
+  const addBtn      = document.getElementById('pickerAddCustom');
+  expandBtn.replaceWith(expandBtn.cloneNode(true));
+  collapseBtn.replaceWith(collapseBtn.cloneNode(true));
+  addBtn.replaceWith(addBtn.cloneNode(true));
+  document.getElementById('pickerExpand').addEventListener('click', () => {
+    content.querySelectorAll('.section').forEach(sec => sec.classList.remove('collapsed'));
+  });
+  document.getElementById('pickerCollapse').addEventListener('click', () => {
+    content.querySelectorAll('.section').forEach(sec => sec.classList.add('collapsed'));
+  });
+  document.getElementById('pickerAddCustom').addEventListener('click', () => {
+    if (kind === 'skill' || kind === 'skillLong') openCustomGoalModal(kind);
+  });
+
+  // open modal + wire close (clone-to-clean)
   modal.setAttribute('aria-hidden', 'false');
-
-  // Wire close actions for this open
-  const btnClose  = document.getElementById('pickerClose');
-  const btnX      = modal.querySelector('.app-modal__close');
-  const backdrop  = modal.querySelector('.app-modal__backdrop');
-
+  const btnClose = document.getElementById('pickerClose');
+  const btnX     = modal.querySelector('.app-modal__close');
+  const backdrop = modal.querySelector('.app-modal__backdrop');
   const close = () => {
     modal.setAttribute('aria-hidden', 'true');
-    // Cleanup handlers by cloning (same approach you use for app modal)
     btnClose.replaceWith(btnClose.cloneNode(true));
     btnX.replaceWith(btnX.cloneNode(true));
     backdrop.replaceWith(backdrop.cloneNode(true));
   };
-
-  // Re-query cloned nodes and attach listeners
   const wire = () => {
-    const cClose   = document.getElementById('pickerClose');
-    const cX       = modal.querySelector('.app-modal__close');
-    const cBackdrop= modal.querySelector('.app-modal__backdrop');
-
+    const cClose    = document.getElementById('pickerClose');
+    const cX        = modal.querySelector('.app-modal__close');
+    const cBackdrop = modal.querySelector('.app-modal__backdrop');
     cClose.addEventListener('click', close);
     cX.addEventListener('click', close);
     cBackdrop.addEventListener('click', close);
+    modal.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); close(); } });
+  };
+  wire();
+}
+function closePicker() {
+  const modal = document.getElementById('pickerModal');
+  if (modal && modal.getAttribute('aria-hidden') === 'false') {
+    const btnClose = document.getElementById('pickerClose');
+    if (btnClose) btnClose.click();
+  }
+}
+function isPickerOpen()    { const m = document.getElementById('pickerModal'); return m && m.getAttribute('aria-hidden') === 'false'; }
+function getPickerContent(){ return document.getElementById('pickerContent'); }
 
-    // ESC to close
+function openCustomGoalModal(kind){
+  const modal   = document.getElementById('customGoalModal');
+  const titleEl = document.getElementById('customGoalTitle');
+  const input   = document.getElementById('customGoalInput');
+  const errEl   = document.getElementById('customGoalError');
+  const btnAdd  = document.getElementById('customGoalAdd');
+  const btnCancel = document.getElementById('customGoalCancel');
+  const btnX    = modal.querySelector('.app-modal__close');
+  const backdrop= modal.querySelector('.app-modal__backdrop');
+
+  const isShort = (kind === 'skill');
+  titleEl.textContent = isShort ? 'Custom Short-Term Goal' : 'Custom Long-Term Goal';
+  input.value = ''; errEl.style.display = 'none';
+
+  modal.setAttribute('aria-hidden', 'false');
+  setTimeout(()=> input.focus(), 0);
+
+  const cleanup = () => {
+    modal.setAttribute('aria-hidden', 'true');
+    btnAdd.replaceWith(btnAdd.cloneNode(true));
+    btnCancel.replaceWith(btnCancel.cloneNode(true));
+    btnX.replaceWith(btnX.cloneNode(true));
+    backdrop.replaceWith(backdrop.cloneNode(true));
+  };
+  const valid = (s) => { const t = (s ?? '').trim(); return t.length > 0 && t.length <= 120; };
+
+  const doAddToWeek = (id) => {
+    if (isShort) {
+      const set = readSet(getFavKeySkill(activeWeek)); if (!set.has(id)) { set.add(id); writeSet(getFavKeySkill(activeWeek), set); }
+    } else {
+      const set = readSet(getFavKeySkillLong(activeWeek)); if (!set.has(id)) { set.add(id); writeSet(getFavKeySkillLong(activeWeek), set); }
+    }
+    refreshUI();
+  };
+
+  const onSubmit = () => {
+    const raw = input.value;
+    if (!valid(raw)) { errEl.style.display = 'block'; input.focus(); return; }
+    const text = raw.trim();
+
+    // dedupe (Option A)
+    const lib = getCustomLib(kind);
+    const existing = lib.find(x => (x.title || '').toLowerCase() === text.toLowerCase());
+
+    if (existing) {
+      cleanup();
+      doAddToWeek(existing.id);
+      showToast('Already exists — added to plan');
+      if (isPickerOpen()) {
+        const content = getPickerContent();
+        content.innerHTML = '';
+        if (isShort) renderLanguagePicker(content); else renderLanguagePickerLong(content);
+      }
+      return;
+    }
+
+    const id = (isShort ? 'cs-' : 'cl-') + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+    lib.push({ id, title: text }); setCustomLib(kind, lib);
+    cleanup();
+    doAddToWeek(id);
+    showToast('Added to plan');
+
+    if (isPickerOpen()) {
+      const content = getPickerContent();
+      content.innerHTML = '';
+      if (isShort) renderLanguagePicker(content); else renderLanguagePickerLong(content);
+    }
+  };
+
+  const wire = () => {
+    const addBtn    = document.getElementById('customGoalAdd');
+    const cancelBtn = document.getElementById('customGoalCancel');
+    const closeBtn  = modal.querySelector('.app-modal__close');
+    const back      = modal.querySelector('.app-modal__backdrop');
+    addBtn.addEventListener('click', onSubmit);
+    cancelBtn.addEventListener('click', cleanup);
+    closeBtn.addEventListener('click', cleanup);
+    back.addEventListener('click', cleanup);
     modal.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { e.preventDefault(); close(); }
+      if (e.key === 'Escape') { e.preventDefault(); cleanup(); }
+      if (e.key === 'Enter')  { e.preventDefault(); onSubmit(); }
     });
   };
   wire();
 }
 
-
-function closePicker() {
-  const modal = document.getElementById('pickerModal');
-  if (modal && modal.getAttribute('aria-hidden') === 'false') {
-    // Simulate clicking Close
-    const btnClose = document.getElementById('pickerClose');
-    if (btnClose) btnClose.click();
-  }
-}
-
-
+/* ===== Renderers (CONTENT ONLY; toolbar is static in HTML) ===== */
 function renderPMGPicker(container) {
-  // Flat list of PMG topics, no accordion header
-  const ul = document.createElement('ul');
-  ul.className = 'source-list';
-  PMG_TOPICS.forEach(t => {
-    ul.appendChild(buildSourceLi({ id: t.id, title: t.title, link: t.link }, 'pmg'));
-  });
+  const ul = document.createElement('ul'); ul.className = 'source-list';
+  PMG_TOPICS.forEach(t => ul.appendChild(buildSourceLi({ id: t.id, title: t.title, link: t.link }, 'pmg')));
   container.appendChild(ul);
-
-  // Disable "+ Add" buttons for items already in this week
   refreshPickerAddButtons(container, 'pmg');
-  // Sync completion lines
   refreshAllCompletionDisplays();
 }
-
 function renderLanguagePicker(container) {
-  // Replicate the full Language section with accordions + expand/collapse controls
-  const controls = document.createElement('div');
-  controls.className = 'accordion-controls';
-  controls.innerHTML = `
-    <button class="btn" id="pickerExpand">Expand all</button>
-    <button class="btn" id="pickerCollapse">Collapse all</button>
-  `;
-  container.appendChild(controls);
-
+  renderCustomGoalsSection(container, 'skill');
   const { sectionNum } = buildNumberingMaps();
-
   LANGUAGE_SECTIONS.forEach(sec => {
-    const sWrap = document.createElement('div');
-    sWrap.className = 'section collapsed'; // collapsed by default
-    sWrap.dataset.sectionId = sec.id;
-
-    const header = document.createElement('div');
-    header.className = 'section-header';
+    const sWrap = document.createElement('div'); sWrap.className = 'section collapsed'; sWrap.dataset.sectionId = sec.id;
+    const header = document.createElement('div'); header.className = 'section-header';
     header.innerHTML = `<span class="arrow">▶</span><span>${sectionNum.get(sec.id)}. ${sec.title}</span>`;
     header.addEventListener('click', () => sWrap.classList.toggle('collapsed'));
     sWrap.appendChild(header);
-
-    const items = document.createElement('ul');
-    items.className = 'section-items source-list';
-
+    const items = document.createElement('ul'); items.className = 'section-items source-list';
     sec.items.forEach((it, index) => {
       const numberedTitle = `${sectionNum.get(sec.id)}.${index+1} ${it.title}`;
       items.appendChild(buildSourceLi({ id: it.id, title: numberedTitle, link: it.link }, 'skill'));
     });
-
     sWrap.appendChild(items);
     container.appendChild(sWrap);
   });
-
-  // Wire local expand/collapse for the modal only
-  container.querySelector('#pickerExpand').addEventListener('click', () => {
-    container.querySelectorAll('.section').forEach(sec => sec.classList.remove('collapsed'));
-  });
-  container.querySelector('#pickerCollapse').addEventListener('click', () => {
-    container.querySelectorAll('.section').forEach(sec => sec.classList.add('collapsed'));
-  });
-
-  // Disable "+ Add" buttons for items already in this week
   refreshPickerAddButtons(container, 'skill');
-  // Sync completion lines
   refreshAllCompletionDisplays();
 }
-
+function renderLanguagePickerLong(container) {
+  renderCustomGoalsSection(container, 'skillLong');
+  const { sectionNum } = (function(){ const m = new Map(); LANGUAGE_SECTIONS_LONG.forEach((sec, si)=> m.set(sec.id, si+1)); return { sectionNum: m }; })();
+  LANGUAGE_SECTIONS_LONG.forEach(sec => {
+    const sWrap = document.createElement('div'); sWrap.className = 'section collapsed'; sWrap.dataset.sectionId = sec.id;
+    const header = document.createElement('div'); header.className = 'section-header';
+    header.innerHTML = `<span class="arrow">▶</span><span>${sectionNum.get(sec.id)}. ${sec.title}</span>`;
+    header.addEventListener('click', () => sWrap.classList.toggle('collapsed'));
+    sWrap.appendChild(header);
+    const items = document.createElement('ul'); items.className = 'section-items source-list';
+    sec.items.forEach((it, index) => {
+      const titled = `${sectionNum.get(sec.id)}.${index+1} ${it.title}`;
+      items.appendChild(buildSourceLi({ id: it.id, title: titled, link: it.link }, 'skillLong'));
+    });
+    sWrap.appendChild(items);
+    container.appendChild(sWrap);
+  });
+  refreshPickerAddButtons(container, 'skillLong');
+  refreshAllCompletionDisplays();
+}
 function refreshPickerAddButtons(container, kind) {
   if (kind === 'pmg') {
     const pmgSet = readSet(getFavKeyPMG(activeWeek));
-    const chosen = pmgSet.values().next().value || null;
+    const chosen = pmgSet.values().next().value ?? null;
     container.querySelectorAll('li[data-item-id]').forEach(li => {
-      const id = li.dataset.itemId;
-      const btn = li.querySelector('.add-btn');
+      const id = li.dataset.itemId; const btn = li.querySelector('.add-btn');
       if (btn) btn.disabled = (id === chosen);
     });
-  } else {
+  } else if (kind === 'skill') {
     const skillSet = readSet(getFavKeySkill(activeWeek));
     container.querySelectorAll('li[data-item-id]').forEach(li => {
-      const id = li.dataset.itemId;
-      const btn = li.querySelector('.add-btn');
+      const id = li.dataset.itemId; const btn = li.querySelector('.add-btn');
       if (btn) btn.disabled = skillSet.has(id);
+    });
+  } else if (kind === 'skillLong') {
+    const skillSetLT = readSet(getFavKeySkillLong(activeWeek));
+    container.querySelectorAll('li[data-item-id]').forEach(li => {
+      const id = li.dataset.itemId; const btn = li.querySelector('.add-btn');
+      if (btn) btn.disabled = skillSetLT.has(id);
     });
   }
 }
 
-// Add-button click handlers (open the picker)
+/* ===== Add-button click handlers (open the picker) ===== */
 document.getElementById('addPMG').addEventListener('click', () => openPicker('pmg'));
 document.getElementById('addSkill').addEventListener('click', () => openPicker('skill'));
+document.getElementById('addSkillLong').addEventListener('click', () => openPicker('skillLong'));
 
-// Toggle empty/non-empty state for each box (controls button presentation)
+/* ===== Toggle empty/non-empty state for each box ===== */
 function refreshAddOpenButtons() {
-  const pmgBox   = document.getElementById('pmgBox');
-  const skillBox = document.getElementById('skillBox');
-  if (pmgBox)   pmgBox.classList.toggle('empty',   document.getElementById('planPMG').children.length === 0);
-  if (skillBox) skillBox.classList.toggle('empty', document.getElementById('planSkills').children.length === 0);
-}
-
-// Is the picker currently open?
-function isPickerOpen() {
-  const m = document.getElementById('pickerModal');
-  return m && m.getAttribute('aria-hidden') === 'false';
-}
-// Get the picker body element (where items are rendered)
-function getPickerBody() {
-  return document.getElementById('pickerBody');
+  const pmgBox       = document.getElementById('pmgBox');
+  const skillBox     = document.getElementById('skillBox');
+  const skillBoxLong = document.getElementById('skillBoxLong');
+  if (pmgBox)       pmgBox.classList.toggle('empty', document.getElementById('planPMG').children.length       === 0);
+  if (skillBox)     skillBox.classList.toggle('empty', document.getElementById('planSkills').children.length    === 0);
+  if (skillBoxLong) skillBoxLong.classList.toggle('empty', document.getElementById('planSkillsLong').children.length === 0);
 }
 
 /* =========================================================
-   INIT / REFRESH
-   ========================================================= */
-function refreshUI(){
-  renderPlan();
-  refreshAddButtons();
-  refreshAllCompletionDisplays();
-  refreshNavButtons();
-}
-
-function setActiveWeek(w){
-  activeWeek=w; localStorage.setItem("activeWeek",String(w)); weekSelect.value=String(w);
-  refreshUI();
-}
-
+ INIT / REFRESH
+========================================================= */
+function refreshUI(){ renderPlan(); refreshAddButtons(); refreshAllCompletionDisplays(); refreshNavButtons(); }
+function setActiveWeek(w){ activeWeek=w; localStorage.setItem("activeWeek",String(w)); weekSelect.value=String(w); refreshUI(); }
 function init(){
-  renderSources();
+  renderSources();                  // builds hidden sources
+  // Force-hide sources section (belt & suspenders)
+  const ss = document.getElementById('sourcesSection');
+  if (ss) { ss.style.display = 'none'; ss.setAttribute('aria-hidden','true'); }
   refreshUI();
 }
 init();
@@ -1616,8 +1593,7 @@ init();
   </div>
 </div>
 
-
-<!-- Picker Modal (for Add buttons) -->
+<!-- Picker Modal -->
 <div id="pickerModal" class="app-modal app-modal--picker" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="app-modal__backdrop"></div>
   <div class="app-modal__dialog" role="document">
@@ -1625,15 +1601,48 @@ init();
       <div class="app-modal__title" id="pickerTitle">Select items</div>
       <button class="app-modal__close" type="button" aria-label="Close">×</button>
     </div>
-    <div class="app-modal__body" id="pickerBody"></div>
+    <div class="app-modal__body">
+      <!-- Tight toolbar header (static HTML) -->
+      <div id="pickerToolbar">
+        <div class="left">
+          <button class="btn" id="pickerExpand">Expand all</button>
+          <button class="btn" id="pickerCollapse">Collapse all</button>
+        </div>
+        <div class="right">
+          <button class="btn btn-accent" id="pickerAddCustom">+ Add Custom Goal</button>
+        </div>
+      </div>
+      <!-- Dynamic picker content renders here -->
+      <div id="pickerContent"></div>
+    </div>
     <div class="app-modal__footer">
       <button class="btn" id="pickerClose" type="button">Close</button>
     </div>
   </div>
 </div>
 
-<!-- Toast Notification -->
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<!-- Custom Goal Modal -->
+<div id="customGoalModal" class="app-modal app-modal--customgoal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="app-modal__backdrop"></div>
+  <div class="app-modal__dialog" role="document">
+    <div class="app-modal__header">
+      <div class="app-modal__title" id="customGoalTitle">Add Custom Goal</div>
+      <button class="app-modal__close" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="app-modal__body">
+      <input id="customGoalInput" type="text" placeholder="Describe your goal…" style="width:100%; padding:8px; font-size:1rem;" />
+      <div id="customGoalError" style="color:#b91c1c; font-size:.9rem; margin-top:6px; display:none;">
+        Please enter a goal (1–120 characters).
+      </div>
+    </div>
+    <div class="app-modal__footer">
+      <button class="btn" id="customGoalCancel" type="button">Cancel</button>
+      <button class="btn" id="customGoalAdd" type="button">Add</button>
+    </div>
+  </div>
+</div>
 
+<!-- Toast -->
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
